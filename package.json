@@ -1,0 +1,105 @@
+{
+  "name": "@x402nano/exact",
+  "version": "0.1.0",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "scripts": {
+    "prebuild": "node -e \"require('fs').rm('dist', { recursive: true, force: true }, () => {})\"",
+    "build": "tsup",
+    "test": "vitest run",
+    "format": "prettier -c .prettierrc --write \"**/*.{ts,js,cjs,json,md}\"",
+    "format:check": "prettier -c .prettierrc --check \"**/*.{ts,js,cjs,json,md}\"",
+    "lint": "eslint . --ext .ts --fix",
+    "lint:check": "eslint . --ext .ts"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x402nano/exact.git"
+  },
+  "description": "Implementation of exact scheme for fixed-amount Nano (XNO) payments over x402 protocol",
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@types/node": "^22.13.4",
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
+    "dotenv": "^17.2.3",
+    "eslint": "^9.24.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsdoc": "^50.6.9",
+    "eslint-plugin-prettier": "^5.2.6",
+    "prettier": "3.5.2",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.6",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.5"
+  },
+  "dependencies": {
+    "@x402/core": "^2.0.0",
+    "@x402nano/helper": "^0.1.0",
+    "@x402nano/typescript-common": "^0.1.0",
+    "bignumber.js": "^9.3.1",
+    "nano-sdk": "^1.0.1",
+    "zod": "^4.2.1"
+  },
+  "keywords": [
+    "x402",
+    "nano",
+    "nanocurrency",
+    "xno",
+    "payments",
+    "ai-agents",
+    "402"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.mts",
+        "default": "./dist/esm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./client": {
+      "import": {
+        "types": "./dist/esm/client/index.d.mts",
+        "default": "./dist/esm/client/index.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/client/index.d.ts",
+        "default": "./dist/cjs/client/index.js"
+      }
+    },
+    "./server": {
+      "import": {
+        "types": "./dist/esm/server/index.d.mts",
+        "default": "./dist/esm/server/index.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/server/index.d.ts",
+        "default": "./dist/cjs/server/index.js"
+      }
+    },
+    "./facilitator": {
+      "import": {
+        "types": "./dist/esm/facilitator/index.d.mts",
+        "default": "./dist/esm/facilitator/index.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/facilitator/index.d.ts",
+        "default": "./dist/cjs/facilitator/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

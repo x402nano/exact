@@ -1,0 +1,12 @@
+{
+  // "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "module": "es2015",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020"],
+    "allowJs": false,
+    "checkJs": false
+  },
+  "include": ["src/typescript", "test/index.test.ts"]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "examples",
+  "version": "0.1.0",
+  "description": "Minimal, runnable examples showing how to implement the exact scheme for fixed-amount Nano (XNO) payments over x402 protocol",
+  "license": "MIT",
+  "dependencies": {
+    "@x402nano/exact": "^0.1.0",
+    "@x402nano/helper": "^0.1.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  }
+}
