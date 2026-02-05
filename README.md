@@ -3,7 +3,7 @@
 [![x402](https://img.shields.io/badge/protocol-x402-0066ff?style=flat-square)](https://www.x402.org)
 [![Nano](https://img.shields.io/badge/crypto-Nano-4fc0d0?style=flat-square&logo=nano)](https://nano.org)
 
-Implementation of [`exact`](https://github.com/x402nano/schemes/exact.md) scheme for fixed-amount Nano (XNO) payments over x402 protocol
+Implementation of [`exact`](https://github.com/x402nano/schemes/blob/main/exact.md) scheme for fixed-amount Nano (XNO) payments over x402 protocol
 
 <p align="center">
   <br/>
@@ -15,7 +15,7 @@ Implementation of [`exact`](https://github.com/x402nano/schemes/exact.md) scheme
 - Enables fixed-amount Nano (XNO) payments of any size over x402 protocol
 - `Client`, `Resource Server` & `Facilitator` implementations
 - Supports the `nano:*` family of networks e.g. `nano:mainnet`, `nano:betanet`
-- Ready-to-run [examples](https://github.com/x402nano/exact/src/typescript/examples) (`Client` ↔ `Resource Server` ↔ `Facilitator`)
+- Ready-to-run [examples](https://github.com/x402nano/exact/tree/main/src/typescript/examples) (`Client` ↔ `Resource Server` ↔ `Facilitator`)
 
 ## Implementations
 
@@ -26,7 +26,7 @@ Implementation of [`exact`](https://github.com/x402nano/schemes/exact.md) scheme
 | **`Facilitator`**          | Service that verifies and/or settles payments for a **`Resource Server`** (performed by a third-party or the **`Resource Server`** itself).                 | API providers, content providers |
 
 
-See [`/examples/`](https://github.com/x402nano/exact/src/typescript/examples) folder for complete runnable versions of all three implementations.
+See [`/examples/`](https://github.com/x402nano/exact/tree/main/src/typescript/examples) folder for complete runnable versions of all three implementations.
 
 ## Installation
 
