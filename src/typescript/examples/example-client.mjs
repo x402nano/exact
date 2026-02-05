@@ -19,7 +19,6 @@ within the Payment Payload.
 import { x402Client, x402HTTPClient } from "@x402/core/client"
 import { ExactNanoScheme } from "@x402nano/exact/client"
 import { Helper } from '@x402nano/helper'
-import { NANO_ACCOUNT_PRIVATE_KEY_PROPERTY } from '@x402nano/typescript-common'
 import 'dotenv/config'
 
 const RESOURCE_URL = `http://localhost:${process.env.RESOURCE_SERVER_PORT}${process.env.RESOURCE_PATH}`
@@ -36,7 +35,7 @@ async function main() {
   // the URL of the Nano work generator (if blank will default to Nano RPC URL), and the private key 
   // of the Nano account to create a send block for.
   const helper = new Helper({
-    [NANO_ACCOUNT_PRIVATE_KEY_PROPERTY]: process.env.CLIENT_NANO_ACCOUNT_PRIVATE_KEY,
+    NANO_ACCOUNT_PRIVATE_KEY: process.env.CLIENT_NANO_ACCOUNT_PRIVATE_KEY,
     NANO_RPC_URL: process.env.NANO_RPC_URL,  
     NANO_WORK_GENERATION_URL: process.env.NANO_WORK_GENERATION_URL
   })
