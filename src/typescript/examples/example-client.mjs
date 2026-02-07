@@ -44,9 +44,6 @@ async function main() {
   helper
     .onBeforeWorkGeneration((context) => {console.log('Generating work...')})
     .onAfterWorkGeneration((context) => {console.log('✅ Work generated')}) 
-    
-  // helper.setCustomWorkGenerator((hash) => { return Promise.resolve('1b03c8ef22523f57') })
-  // helper.setCustomWorkGenerator((hash) => { console.log(hash) })
 
   // Create instance of the implementation of the x402 Nano "exact" payment scheme for x402 Client.
   // Pass in Helper instance just created.
