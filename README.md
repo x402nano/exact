@@ -72,7 +72,7 @@ This is new software and hasn't yet been deployed heavily in production environm
 
 We welcome developers to submit implementations of the `exact` scheme in other languages e.g. Python, Go, etc...
 
-Join the [x402 Nano Discord](https://discord.gg/s22QDgc3eJ) for coordination and discussion!
+Join the [x402 Nano Discord](https://discord.gg/JAMgp8EXQk) for coordination and discussion!
 
 ## Related Projects
 
