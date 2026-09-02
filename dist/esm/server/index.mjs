@@ -1,9 +1,7 @@
 import {
-  ASSET_AMOUNT,
   CURRENCY_CODE_XNO,
-  STRING_DECIMAL,
   validate
-} from "../chunk-XPBYBE7I.mjs";
+} from "../chunk-SF5W6BOT.mjs";
 import {
   __publicField
 } from "../chunk-NSSMTXJJ.mjs";
@@ -11,6 +9,7 @@ import {
 // src/typescript/server/scheme.ts
 import { Nano } from "nano-sdk";
 import BigNumber from "bignumber.js";
+import { ASSET_AMOUNT, STRING_DECIMAL } from "@x402nano/typescript-common";
 function convertNanoToRaw(amount) {
   return Nano.Math.nanoToRaw({ nano: amount });
 }
@@ -37,6 +36,26 @@ var ExactNanoScheme = class {
      * The payment scheme identifier.
      */
     __publicField(this, "scheme", "exact");
+    /**
+     * Asset-transfer method used when a payment requirement does not specify one.
+     *
+     * "exact" payments are a single on-chain transfer with no wire-level
+     * asset-transfer method, so core's reserved "default" key applies.
+     */
+    __publicField(this, "defaultAssetTransferMethod", "default");
+    /**
+     * Payment flows supported per asset-transfer method.
+     *
+     * "exact" uses the authorization flow: the facilitator verifies the signed
+     * block before the resource handler runs and only broadcasts it once the
+     * handler succeeds. Clients are therefore never charged for failed requests.
+     */
+    __publicField(this, "paymentFlows", {
+      default: {
+        default: "authorization",
+        supported: ["authorization"]
+      }
+    });
   }
   /**
    * Parses a price into an AssetAmount object.

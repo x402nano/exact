@@ -1,15 +1,17 @@
 import {
-  NANO_ACCOUNT_PRIVATE_KEY_PROPERTY,
-  NANO_SEND_BLOCK,
-  SEND_BLOCK_WORK_THRESHOLD,
   validate
-} from "../chunk-XPBYBE7I.mjs";
+} from "../chunk-SF5W6BOT.mjs";
 import {
   __publicField
 } from "../chunk-NSSMTXJJ.mjs";
 
 // src/typescript/facilitator/scheme.ts
 import BigNumber from "bignumber.js";
+import {
+  NANO_SEND_BLOCK,
+  SEND_BLOCK_WORK_THRESHOLD,
+  NANO_ACCOUNT_PRIVATE_KEY_PROPERTY
+} from "@x402nano/typescript-common";
 import { Nano } from "nano-sdk";
 var ERROR_X402_VERSION_NOT_SUPPORTED = "error_x402_version_not_supported";
 var ERROR_INVALID_BLOCK = "error_invalid_block";
@@ -62,7 +64,8 @@ var ExactNanoScheme = class {
      * CAIP-2 identifier for the Nano network family e.g. nano:mainnet, nano:testnet
      */
     __publicField(this, "caipFamily", "nano:*");
-    if (helper?.config?.[NANO_ACCOUNT_PRIVATE_KEY_PROPERTY]) {
+    const config = helper.config;
+    if (config?.[NANO_ACCOUNT_PRIVATE_KEY_PROPERTY]) {
       throw new Error(`[${ERROR_INVALID_HELPER}] - ${NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`);
     }
   }
@@ -170,6 +173,9 @@ var ExactNanoScheme = class {
           account: exactNanoPayload.block.account
         });
         let isBlockVerified = Nano.Crypto.verifyBlock({
+          // NanoSendBlock types link_as_account as optional, but it is guaranteed
+          // present here: the block passed NANO_SEND_BLOCK validation and the
+          // payTo/link_as_account match check above.
           block: exactNanoPayload.block,
           publicKey
         });

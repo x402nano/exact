@@ -74,6 +74,28 @@ export class ExactNanoScheme implements SchemeNetworkServer {
   readonly scheme = 'exact'
 
   /**
+   * Asset-transfer method used when a payment requirement does not specify one.
+   *
+   * "exact" payments are a single on-chain transfer with no wire-level
+   * asset-transfer method, so core's reserved "default" key applies.
+   */
+  readonly defaultAssetTransferMethod = 'default'
+
+  /**
+   * Payment flows supported per asset-transfer method.
+   *
+   * "exact" uses the authorization flow: the facilitator verifies the signed
+   * block before the resource handler runs and only broadcasts it once the
+   * handler succeeds. Clients are therefore never charged for failed requests.
+   */
+  readonly paymentFlows = {
+    default: {
+      default: 'authorization',
+      supported: ['authorization'],
+    },
+  } as const
+
+  /**
    * Parses a price into an AssetAmount object.
    *
    * Supports both direct AssetAmount input and simple price values (string/number).
