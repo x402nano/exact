@@ -12,8 +12,8 @@ The **x402 protocol** (reviving HTTP **402 Payment Required**) enables simple, p
 
 The examples consists of three independent components:
 
-| Service             | Role                              | Main file                 | Description                                                             |
-| ------------------- | --------------------------------- | ------------------------- | ----------------------------------------------------------------------- |
+| Service               | Role                              | Main file                 | Description                                                             |
+| --------------------- | --------------------------------- | ------------------------- | ----------------------------------------------------------------------- |
 | **`Client`**          | Pays for resource                 | `example-client.mjs`      | Requests resource → creates Nano payment → retries request with payment |
 | **`Resource Server`** | Paywalls content / API            | `example-server.mjs`      | Returns 402 → verifies & settles → delivers content                     |
 | **`Facilitator`**     | Payment verification & settlement | `example-facilitator.mjs` | Validates Nano blocks & publishes them to the network                   |

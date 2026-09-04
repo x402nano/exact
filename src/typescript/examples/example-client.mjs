@@ -53,8 +53,7 @@ async function main() {
   // Also pass the scheme instance just created.
   client.register('nano:mainnet', exactNanoScheme)
 
-  // @x402/core >= 2.22 only allows payments for default assets (e.g. USD) unless
-  // opted in via spend controls — allow XNO on nano:mainnet.
+  // Configure client to only create Nano payments
   client.setSpendControls({
     allowedAssets: [{ network: 'nano:mainnet', asset: 'XNO' }],
   })

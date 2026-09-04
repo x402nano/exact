@@ -19,12 +19,11 @@ Implementation of [`exact`](https://github.com/x402nano/schemes/blob/main/exact.
 
 ## Implementations
 
-|              | Role                              | Used By                                                             |
-| ------------------- | --------------------------------- | ----------------------------------------------------------------------- |
-| **`Client`** | Controls a payer's Nano account, capable of generating and signing send state blocks to pay for a resource.            | Wallet developers                     |
-| **`Resource Server`**     | Defines payment requirements for a resource (e.g. API, content), and delivers the resource to **`Client`** on successful payment. | API providers, content providers
-| **`Facilitator`**          | Service that verifies and/or settles payments for a **`Resource Server`** (performed by a third-party or the **`Resource Server`** itself).                 | API providers, content providers |
-
+|                       | Role                                                                                                                                        | Used By                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **`Client`**          | Controls a payer's Nano account, capable of generating and signing send state blocks to pay for a resource.                                 | Wallet developers                |
+| **`Resource Server`** | Defines payment requirements for a resource (e.g. API, content), and delivers the resource to **`Client`** on successful payment.           | API providers, content providers |
+| **`Facilitator`**     | Service that verifies and/or settles payments for a **`Resource Server`** (performed by a third-party or the **`Resource Server`** itself). | API providers, content providers |
 
 See [`/examples/`](https://github.com/x402nano/exact/tree/main/src/typescript/examples) folder for complete runnable versions of all three implementations.
 

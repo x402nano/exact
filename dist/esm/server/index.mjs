@@ -1,8 +1,4 @@
 import {
-  CURRENCY_CODE_XNO,
-  validate
-} from "../chunk-SF5W6BOT.mjs";
-import {
   __publicField
 } from "../chunk-NSSMTXJJ.mjs";
 
@@ -10,6 +6,11 @@ import {
 import { Nano } from "nano-sdk";
 import BigNumber from "bignumber.js";
 import { ASSET_AMOUNT, STRING_DECIMAL } from "@x402nano/typescript-common";
+
+// src/typescript/common.ts
+var CURRENCY_CODE_XNO = "XNO";
+
+// src/typescript/server/scheme.ts
 function convertNanoToRaw(amount) {
   return Nano.Math.nanoToRaw({ nano: amount });
 }
@@ -17,11 +18,12 @@ function parseAmountToString(amount) {
   if (typeof amount === "string") {
     const amount_ = amount.trim();
     try {
-      if (validate(STRING_DECIMAL, amount_)) {
+      if (!STRING_DECIMAL.safeParse(amount_).success) {
         return amount_;
       }
       return BigNumber(amount_).toFixed();
-    } catch (_) {
+    } catch (error) {
+      void error;
       return amount_;
     }
   }
@@ -74,7 +76,7 @@ var ExactNanoScheme = class {
    * ```
    */
   async parsePrice(price, network) {
-    if (typeof price === "object" && validate(ASSET_AMOUNT, price)) {
+    if (typeof price === "object" && ASSET_AMOUNT.safeParse(price).success) {
       if (price.asset.toUpperCase() !== CURRENCY_CODE_XNO) {
         throw new Error(`Asset must be specified as "${CURRENCY_CODE_XNO}" for AssetAmount`);
       }
@@ -87,7 +89,7 @@ var ExactNanoScheme = class {
     }
     let price_to_string = parseAmountToString(price);
     let isRawUnits;
-    if (!validate(STRING_DECIMAL, price_to_string)) {
+    if (!STRING_DECIMAL.safeParse(price_to_string).success) {
       isRawUnits = true;
     }
     return {

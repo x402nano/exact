@@ -38,13 +38,6 @@ module.exports = __toCommonJS(facilitator_exports);
 // src/typescript/facilitator/scheme.ts
 var import_bignumber = __toESM(require("bignumber.js"));
 var import_typescript_common = require("@x402nano/typescript-common");
-
-// src/typescript/common.ts
-function validate(zodSchema, toParse) {
-  return zodSchema.safeParse(toParse).success;
-}
-
-// src/typescript/facilitator/scheme.ts
 var import_nano_sdk = require("nano-sdk");
 var ERROR_X402_VERSION_NOT_SUPPORTED = "error_x402_version_not_supported";
 var ERROR_INVALID_BLOCK = "error_invalid_block";
@@ -97,9 +90,10 @@ var ExactNanoScheme = class {
      * CAIP-2 identifier for the Nano network family e.g. nano:mainnet, nano:testnet
      */
     __publicField(this, "caipFamily", "nano:*");
-    const config = helper.config;
-    if (config?.[import_typescript_common.NANO_ACCOUNT_PRIVATE_KEY_PROPERTY]) {
-      throw new Error(`[${ERROR_INVALID_HELPER}] - ${import_typescript_common.NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`);
+    if (import_typescript_common.NANO_ACCOUNT_PRIVATE_KEY_PROPERTY in helper.getConfig()) {
+      throw new Error(
+        `[${ERROR_INVALID_HELPER}] - ${import_typescript_common.NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`
+      );
     }
   }
   /**
@@ -144,7 +138,7 @@ var ExactNanoScheme = class {
   async verify(payload, requirements) {
     try {
       const exactNanoPayload = payload.payload;
-      if (!validate(import_typescript_common.NANO_SEND_BLOCK, exactNanoPayload.block)) {
+      if (!import_typescript_common.NANO_SEND_BLOCK.safeParse(exactNanoPayload.block).success) {
         return constructVerifyInvalidResponse({
           invalidReason: ERROR_INVALID_BLOCK,
           payer: ""
@@ -197,7 +191,7 @@ var ExactNanoScheme = class {
         }
       } catch (error) {
         return constructVerifyInvalidResponse({
-          invalidReason: ERROR_INVALID_WORK,
+          invalidReason: `${ERROR_INVALID_WORK}` + (error instanceof Error ? ` - ${error.message} ` : ``),
           payer
         });
       }
@@ -206,9 +200,6 @@ var ExactNanoScheme = class {
           account: exactNanoPayload.block.account
         });
         let isBlockVerified = import_nano_sdk.Nano.Crypto.verifyBlock({
-          // NanoSendBlock types link_as_account as optional, but it is guaranteed
-          // present here: the block passed NANO_SEND_BLOCK validation and the
-          // payTo/link_as_account match check above.
           block: exactNanoPayload.block,
           publicKey
         });
@@ -217,7 +208,7 @@ var ExactNanoScheme = class {
         }
       } catch (error) {
         return constructVerifyInvalidResponse({
-          invalidReason: ERROR_INVALID_BLOCK,
+          invalidReason: `${ERROR_INVALID_BLOCK}` + (error instanceof Error ? ` - ${error.message} ` : ``),
           payer
         });
       }
@@ -254,7 +245,7 @@ var ExactNanoScheme = class {
   async settle(payload, requirements) {
     try {
       const exactNanoPayload = payload.payload;
-      if (!validate(import_typescript_common.NANO_SEND_BLOCK, exactNanoPayload.block)) {
+      if (!import_typescript_common.NANO_SEND_BLOCK.safeParse(exactNanoPayload.block).success) {
         return constructSettleUnsuccessfulResponse({
           network: payload.accepted.network,
           errorReason: ERROR_INVALID_BLOCK,
@@ -270,6 +261,7 @@ var ExactNanoScheme = class {
       try {
         getProcessBlockResponse = await this.helper.processBlock({ block: exactNanoPayload.block });
       } catch (error) {
+        void error;
         return unsuccessfulResponse;
       }
       let hash = getProcessBlockResponse.hash;

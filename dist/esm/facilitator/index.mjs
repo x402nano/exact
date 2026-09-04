@@ -1,7 +1,4 @@
 import {
-  validate
-} from "../chunk-SF5W6BOT.mjs";
-import {
   __publicField
 } from "../chunk-NSSMTXJJ.mjs";
 
@@ -64,9 +61,10 @@ var ExactNanoScheme = class {
      * CAIP-2 identifier for the Nano network family e.g. nano:mainnet, nano:testnet
      */
     __publicField(this, "caipFamily", "nano:*");
-    const config = helper.config;
-    if (config?.[NANO_ACCOUNT_PRIVATE_KEY_PROPERTY]) {
-      throw new Error(`[${ERROR_INVALID_HELPER}] - ${NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`);
+    if (NANO_ACCOUNT_PRIVATE_KEY_PROPERTY in helper.getConfig()) {
+      throw new Error(
+        `[${ERROR_INVALID_HELPER}] - ${NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`
+      );
     }
   }
   /**
@@ -111,7 +109,7 @@ var ExactNanoScheme = class {
   async verify(payload, requirements) {
     try {
       const exactNanoPayload = payload.payload;
-      if (!validate(NANO_SEND_BLOCK, exactNanoPayload.block)) {
+      if (!NANO_SEND_BLOCK.safeParse(exactNanoPayload.block).success) {
         return constructVerifyInvalidResponse({
           invalidReason: ERROR_INVALID_BLOCK,
           payer: ""
@@ -164,7 +162,7 @@ var ExactNanoScheme = class {
         }
       } catch (error) {
         return constructVerifyInvalidResponse({
-          invalidReason: ERROR_INVALID_WORK,
+          invalidReason: `${ERROR_INVALID_WORK}` + (error instanceof Error ? ` - ${error.message} ` : ``),
           payer
         });
       }
@@ -173,9 +171,6 @@ var ExactNanoScheme = class {
           account: exactNanoPayload.block.account
         });
         let isBlockVerified = Nano.Crypto.verifyBlock({
-          // NanoSendBlock types link_as_account as optional, but it is guaranteed
-          // present here: the block passed NANO_SEND_BLOCK validation and the
-          // payTo/link_as_account match check above.
           block: exactNanoPayload.block,
           publicKey
         });
@@ -184,7 +179,7 @@ var ExactNanoScheme = class {
         }
       } catch (error) {
         return constructVerifyInvalidResponse({
-          invalidReason: ERROR_INVALID_BLOCK,
+          invalidReason: `${ERROR_INVALID_BLOCK}` + (error instanceof Error ? ` - ${error.message} ` : ``),
           payer
         });
       }
@@ -221,7 +216,7 @@ var ExactNanoScheme = class {
   async settle(payload, requirements) {
     try {
       const exactNanoPayload = payload.payload;
-      if (!validate(NANO_SEND_BLOCK, exactNanoPayload.block)) {
+      if (!NANO_SEND_BLOCK.safeParse(exactNanoPayload.block).success) {
         return constructSettleUnsuccessfulResponse({
           network: payload.accepted.network,
           errorReason: ERROR_INVALID_BLOCK,
@@ -237,6 +232,7 @@ var ExactNanoScheme = class {
       try {
         getProcessBlockResponse = await this.helper.processBlock({ block: exactNanoPayload.block });
       } catch (error) {
+        void error;
         return unsuccessfulResponse;
       }
       let hash = getProcessBlockResponse.hash;

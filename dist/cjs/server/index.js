@@ -41,9 +41,6 @@ var import_bignumber = __toESM(require("bignumber.js"));
 var import_typescript_common = require("@x402nano/typescript-common");
 
 // src/typescript/common.ts
-function validate(zodSchema, toParse) {
-  return zodSchema.safeParse(toParse).success;
-}
 var CURRENCY_CODE_XNO = "XNO";
 
 // src/typescript/server/scheme.ts
@@ -54,11 +51,12 @@ function parseAmountToString(amount) {
   if (typeof amount === "string") {
     const amount_ = amount.trim();
     try {
-      if (validate(import_typescript_common.STRING_DECIMAL, amount_)) {
+      if (!import_typescript_common.STRING_DECIMAL.safeParse(amount_).success) {
         return amount_;
       }
       return (0, import_bignumber.default)(amount_).toFixed();
-    } catch (_) {
+    } catch (error) {
+      void error;
       return amount_;
     }
   }
@@ -111,7 +109,7 @@ var ExactNanoScheme = class {
    * ```
    */
   async parsePrice(price, network) {
-    if (typeof price === "object" && validate(import_typescript_common.ASSET_AMOUNT, price)) {
+    if (typeof price === "object" && import_typescript_common.ASSET_AMOUNT.safeParse(price).success) {
       if (price.asset.toUpperCase() !== CURRENCY_CODE_XNO) {
         throw new Error(`Asset must be specified as "${CURRENCY_CODE_XNO}" for AssetAmount`);
       }
@@ -124,7 +122,7 @@ var ExactNanoScheme = class {
     }
     let price_to_string = parseAmountToString(price);
     let isRawUnits;
-    if (!validate(import_typescript_common.STRING_DECIMAL, price_to_string)) {
+    if (!import_typescript_common.STRING_DECIMAL.safeParse(price_to_string).success) {
       isRawUnits = true;
     }
     return {
