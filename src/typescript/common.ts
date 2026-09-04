@@ -1,6 +1,6 @@
-import { ZodObject } from 'zod'
+import type { ZodTypeAny } from 'zod'
 
-export function validate(zodSchema: ZodObject, toParse: any): boolean {
+export function validate(zodSchema: ZodTypeAny, toParse: any): boolean {
   return zodSchema.safeParse(toParse).success
 }
 

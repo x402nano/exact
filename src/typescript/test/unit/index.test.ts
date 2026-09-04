@@ -210,6 +210,15 @@ describe('@x402nano/exact/client', () => {
     ).toBe(SCHEME)
   })
 
+  it(`should allow "${ASSET}" payments under the spend controls`, () => {
+    // @x402/core >= 2.22 only allows default assets (e.g. USD) unless opt-in
+    // entries are listed in spendControls.allowedAssets — XNO is not a default.
+    client.setSpendControls({
+      allowedAssets: [{ network: NETWORK, asset: ASSET }],
+    })
+    expect(client).toBeDefined()
+  })
+
   it('should have valid PaymentPayload', async () => {
     expect(await client.createPaymentPayload(MOCK_PAYMENT_REQUIRED_RESPONSE_CLIENT)).toStrictEqual(
       MOCK_PAYMENT_PAYLOAD,
@@ -257,7 +266,7 @@ describe('@x402nano/exact/server', () => {
     paymentRequirement = (
       await server.buildPaymentRequirements(SAMPLE_ROUTES[SAMPLE_ROUTE_A_KEY])
     )[0]
-    let paymentRequiredResponse = server.createPaymentRequiredResponse(
+    let paymentRequiredResponse = await server.createPaymentRequiredResponse(
       [paymentRequirement],
       SAMPLE_RESOURCE_A,
     )

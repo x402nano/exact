@@ -37,69 +37,7 @@ module.exports = __toCommonJS(facilitator_exports);
 
 // src/typescript/facilitator/scheme.ts
 var import_bignumber = __toESM(require("bignumber.js"));
-
-// ../typescript-common/dist/esm/index.mjs
-var z = __toESM(require("zod"), 1);
-var STRING_INT = z.string().regex(/^\d+$/);
-var STRING_DECIMAL = z.string().regex(/^\d*\.\d+$/);
-var URL = z.url();
-var HEX_64 = z.string().length(64).regex(/^[0-9A-F]{64}$/i);
-var NANO_WORK = z.string().regex(/^[0-9A-F]+$/i);
-var NANO_ACCOUNT = z.string().regex(/^(nano_|xrb_)[13][1-9a-km-uw-z]{59}$/);
-var ACCOUNT_INFO_SUCCESS = z.object({
-  frontier: HEX_64,
-  open_block: HEX_64,
-  representative_block: HEX_64,
-  representative: NANO_ACCOUNT,
-  balance: STRING_INT,
-  modified_timestamp: STRING_INT,
-  block_count: STRING_INT,
-  account_version: STRING_INT.optional(),
-  confirmation_height: STRING_INT,
-  confirmation_height_frontier: HEX_64
-});
-var HELPER_CONFIG = z.object({
-  NANO_RPC_URL: URL.optional(),
-  NANO_WORK_GENERATION_URL: URL.optional(),
-  NANO_ACCOUNT_PRIVATE_KEY: HEX_64.optional()
-});
-var PROCESS_BLOCK_SUCCESS = z.object({
-  hash: HEX_64
-});
-var NANO_RPC_ERROR = z.object({
-  error: z.string()
-});
-var NANO_SEND_BLOCK = z.strictObject({
-  type: z.literal("state"),
-  account: NANO_ACCOUNT,
-  previous: HEX_64,
-  representative: NANO_ACCOUNT,
-  balance: STRING_INT,
-  link: HEX_64,
-  link_as_account: NANO_ACCOUNT.optional(),
-  work: z.string().regex(/^[0-9A-F]+$/i),
-  signature: z.string().regex(/^[0-9A-F]{128}$/i)
-});
-var NANO_RPC_CALL_WORK_GENERATE_RESPONSE = z.object({
-  work: NANO_WORK,
-  difficulty: z.string(),
-  multiplier: z.string(),
-  hash: HEX_64
-});
-var EXACT_NANO_PAYLOAD = z.object({
-  block: NANO_SEND_BLOCK
-});
-var ASSET_AMOUNT = z.object({
-  asset: z.string(),
-  amount: z.string(),
-  extra: z.object().optional()
-});
-var WORK_GENERATOR = z.function({
-  input: [z.string()],
-  output: z.string()
-});
-var SEND_BLOCK_WORK_THRESHOLD = "fffffff800000000";
-var NANO_ACCOUNT_PRIVATE_KEY_PROPERTY = "NANO_ACCOUNT_PRIVATE_KEY";
+var import_typescript_common = require("@x402nano/typescript-common");
 
 // src/typescript/common.ts
 function validate(zodSchema, toParse) {
@@ -159,8 +97,9 @@ var ExactNanoScheme = class {
      * CAIP-2 identifier for the Nano network family e.g. nano:mainnet, nano:testnet
      */
     __publicField(this, "caipFamily", "nano:*");
-    if (helper?.config?.[NANO_ACCOUNT_PRIVATE_KEY_PROPERTY]) {
-      throw new Error(`[${ERROR_INVALID_HELPER}] - ${NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`);
+    const config = helper.config;
+    if (config?.[import_typescript_common.NANO_ACCOUNT_PRIVATE_KEY_PROPERTY]) {
+      throw new Error(`[${ERROR_INVALID_HELPER}] - ${import_typescript_common.NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`);
     }
   }
   /**
@@ -205,7 +144,7 @@ var ExactNanoScheme = class {
   async verify(payload, requirements) {
     try {
       const exactNanoPayload = payload.payload;
-      if (!validate(NANO_SEND_BLOCK, exactNanoPayload.block)) {
+      if (!validate(import_typescript_common.NANO_SEND_BLOCK, exactNanoPayload.block)) {
         return constructVerifyInvalidResponse({
           invalidReason: ERROR_INVALID_BLOCK,
           payer: ""
@@ -251,7 +190,7 @@ var ExactNanoScheme = class {
         let isWorkValid = import_nano_sdk.Nano.Crypto.verifyWork({
           hash: frontier,
           work: exactNanoPayload.block.work,
-          threshold: SEND_BLOCK_WORK_THRESHOLD
+          threshold: import_typescript_common.SEND_BLOCK_WORK_THRESHOLD
         });
         if (!isWorkValid) {
           throw new Error();
@@ -267,6 +206,9 @@ var ExactNanoScheme = class {
           account: exactNanoPayload.block.account
         });
         let isBlockVerified = import_nano_sdk.Nano.Crypto.verifyBlock({
+          // NanoSendBlock types link_as_account as optional, but it is guaranteed
+          // present here: the block passed NANO_SEND_BLOCK validation and the
+          // payTo/link_as_account match check above.
           block: exactNanoPayload.block,
           publicKey
         });
@@ -312,7 +254,7 @@ var ExactNanoScheme = class {
   async settle(payload, requirements) {
     try {
       const exactNanoPayload = payload.payload;
-      if (!validate(NANO_SEND_BLOCK, exactNanoPayload.block)) {
+      if (!validate(import_typescript_common.NANO_SEND_BLOCK, exactNanoPayload.block)) {
         return constructSettleUnsuccessfulResponse({
           network: payload.accepted.network,
           errorReason: ERROR_INVALID_BLOCK,
