@@ -8,7 +8,7 @@ import {
 import { Nano } from 'nano-sdk'
 import BigNumber from 'bignumber.js'
 import { ASSET_AMOUNT, STRING_DECIMAL } from '@x402nano/typescript-common'
-import { validate, CURRENCY_CODE_XNO } from '../common'
+import { CURRENCY_CODE_XNO } from '../common'
 
 /**
  * Converts a nano amount to its raw unit equivalent.
@@ -38,16 +38,17 @@ function convertNanoToRaw(amount: string) {
  * const nanoString = parseAmountToString(0.001) // returns "1000000000000000000000000000"
  * ```
  */
-function parseAmountToString(amount: string | number | any) {
+function parseAmountToString(amount: string | number | unknown) {
   if (typeof amount === 'string') {
     const amount_ = amount.trim()
 
     try {
-      if (validate(STRING_DECIMAL, amount_)) {
+      if (!STRING_DECIMAL.safeParse(amount_).success) {
         return amount_
       }
       return BigNumber(amount_).toFixed()
-    } catch (_) {
+    } catch (error) {
+      void error
       return amount_
     }
   }
@@ -112,7 +113,7 @@ export class ExactNanoScheme implements SchemeNetworkServer {
    * ```
    */
   async parsePrice(price: Price, network: Network): Promise<AssetAmount> {
-    if (typeof price === 'object' && validate(ASSET_AMOUNT, price)) {
+    if (typeof price === 'object' && ASSET_AMOUNT.safeParse(price).success) {
       if (price.asset.toUpperCase() !== CURRENCY_CODE_XNO) {
         throw new Error(`Asset must be specified as "${CURRENCY_CODE_XNO}" for AssetAmount`)
       }
@@ -129,7 +130,7 @@ export class ExactNanoScheme implements SchemeNetworkServer {
     let price_to_string: string = parseAmountToString(price)
 
     let isRawUnits
-    if (!validate(STRING_DECIMAL, price_to_string)) {
+    if (!STRING_DECIMAL.safeParse(price_to_string).success) {
       isRawUnits = true
     }
 
