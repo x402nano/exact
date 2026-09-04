@@ -105,7 +105,7 @@ async function resourceServerMiddleware(req, res, next) {
     console.log(`Received request for resource ${req.path}`)
 
     // Step 2: Return 402 with payment requirements
-    const paymentRequired = resourceServer.createPaymentRequiredResponse([paymentRequirements], {
+    const paymentRequired = await resourceServer.createPaymentRequiredResponse([paymentRequirements], {
       url: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
       description: endpointConfig.description,
       mimeType: endpointConfig.mimeType,
