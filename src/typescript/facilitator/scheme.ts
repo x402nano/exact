@@ -27,6 +27,8 @@ const ERROR_INVALID_WORK: string = 'error_invalid_work'
 const ERROR_NO_ACCOUNT_FRONTIER: string = 'error_no_account_frontier'
 const ERROR_NOT_ENOUGH_BALANCE: string = 'error_not_enough_balance'
 const ERROR_PAYTO_LINK_MISMATCH: string = 'error_payto_link_mismatch'
+const ERROR_PREVIOUS_NOT_FRONTIER: string = 'error_previous_not_frontier'
+const ERROR_AMOUNT_MISMATCH: string = 'error_amount_mismatch'
 const ERROR_NANO_RPC: string = 'error_nano_rpc'
 const ERROR_INVALID_HELPER: string = 'error_invalid_helper'
 const ERROR_FACILITATOR: string = 'error_facilitator'
@@ -162,9 +164,11 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
    * Performs multiple validation steps including:
    * - x402 protocol version check
    * - Account frontier verification
+   * - Sufficient balance check
+   * - Block builds on the account's current frontier (block.previous)
+   * - Block sends exactly the required amount (account balance minus block.balance)
    * - Proof-of-Work validation
    * - Block signature verification
-   * - Sufficient balance check
    *
    * @param payload - The payment payload to verify
    * @param requirements - The expected payment requirements
@@ -248,6 +252,31 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       if (BigNumber(balance).minus(payAmount).isNegative()) {
         return constructVerifyInvalidResponse({
           invalidReason: ERROR_NOT_ENOUGH_BALANCE,
+          payer,
+        })
+      }
+
+      // -----
+      // Verify that the block builds on the account's current frontier.
+      // A block on any other previous is a fork or a gap and cannot settle,
+      // and the PoW below is checked against the frontier.
+      if (exactNanoPayload.block.previous.toUpperCase() !== frontier.toUpperCase()) {
+        return constructVerifyInvalidResponse({
+          invalidReason: ERROR_PREVIOUS_NOT_FRONTIER,
+          payer,
+        })
+      }
+
+      // -----
+      // Verify that the block sends exactly the required amount: the account
+      // balance minus block.balance must equal requirements.amount (scheme
+      // specification, facilitator verification step 2). Without this check a
+      // signed block that sends less than the amount, down to 1 raw, verifies
+      // and settles.
+      const sentAmount = BigNumber(balance).minus(exactNanoPayload.block.balance)
+      if (!sentAmount.isEqualTo(payAmount)) {
+        return constructVerifyInvalidResponse({
+          invalidReason: ERROR_AMOUNT_MISMATCH,
           payer,
         })
       }
