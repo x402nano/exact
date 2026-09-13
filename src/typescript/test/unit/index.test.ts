@@ -75,7 +75,8 @@ const MOCK_HELPER = {
     frontier: '8AEF920ABA234F23259B018F4AF945E849477A8171C5116FAF45736817D838A4',
     open_block: '991CF190094C00F0B68E2E5F75F6BEE95A2E0BD93CEAA4A6734DB9F19B728948',
     representative_block: '991CF190094C00F0B68E2E5F75F6BEE95A2E0BD93CEAA4A6734DB9F19B728948',
-    balance: '235580100176034320859259343606608761791',
+    // MOCK_SEND_BLOCK.balance plus MOCK_PAYMENT_REQUIREMENT.amount: the block sends exactly the required amount
+    balance: '97258410000000000000000000000',
     modified_timestamp: '1501793775',
     block_count: '33',
     account_version: '1',
@@ -335,6 +336,59 @@ describe('@x402nano/exact/facilitator', () => {
     expect(await facilitator.verify(MOCK_PAYMENT_PAYLOAD, MOCK_PAYMENT_REQUIREMENT)).toStrictEqual({
       isValid: true,
       invalidReason: undefined,
+      payer: MOCK_SEND_BLOCK.account,
+    })
+  })
+
+  it(`should reject a block whose previous is not the account frontier`, async () => {
+    const payload = Object.assign({}, MOCK_PAYMENT_PAYLOAD, {
+      payload: {
+        block: Object.assign({}, MOCK_SEND_BLOCK, {
+          previous: '34C70FCA0952E29ADC7BEE6F20381466AE42BD1CFBA4B7DFFE8BD69DF95449EB',
+        }),
+      },
+    })
+    expect(await facilitator.verify(payload, MOCK_PAYMENT_REQUIREMENT)).toStrictEqual({
+      isValid: false,
+      invalidReason: 'error_previous_not_frontier',
+      payer: MOCK_SEND_BLOCK.account,
+    })
+  })
+
+  it(`should reject a block that sends less than the required amount`, async () => {
+    // balance one raw above the correct post-send balance: sends amount - 1 raw
+    const payload = Object.assign({}, MOCK_PAYMENT_PAYLOAD, {
+      payload: {
+        block: Object.assign({}, MOCK_SEND_BLOCK, { balance: '91258410000000000000000000001' }),
+      },
+    })
+    expect(await facilitator.verify(payload, MOCK_PAYMENT_REQUIREMENT)).toStrictEqual({
+      isValid: false,
+      invalidReason: 'error_amount_mismatch',
+      payer: MOCK_SEND_BLOCK.account,
+    })
+  })
+
+  it(`should reject a block that sends more than the required amount`, async () => {
+    const payload = Object.assign({}, MOCK_PAYMENT_PAYLOAD, {
+      payload: {
+        block: Object.assign({}, MOCK_SEND_BLOCK, { balance: '91258409999999999999999999999' }),
+      },
+    })
+    expect(await facilitator.verify(payload, MOCK_PAYMENT_REQUIREMENT)).toStrictEqual({
+      isValid: false,
+      invalidReason: 'error_amount_mismatch',
+      payer: MOCK_SEND_BLOCK.account,
+    })
+  })
+
+  it(`should reject a block when the required amount differs from what the block sends`, async () => {
+    const requirement = Object.assign({}, MOCK_PAYMENT_REQUIREMENT, {
+      amount: '1000000000000000000000000000',
+    })
+    expect(await facilitator.verify(MOCK_PAYMENT_PAYLOAD, requirement)).toStrictEqual({
+      isValid: false,
+      invalidReason: 'error_amount_mismatch',
       payer: MOCK_SEND_BLOCK.account,
     })
   })
