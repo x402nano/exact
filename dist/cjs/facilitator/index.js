@@ -45,6 +45,8 @@ var ERROR_INVALID_WORK = "error_invalid_work";
 var ERROR_NO_ACCOUNT_FRONTIER = "error_no_account_frontier";
 var ERROR_NOT_ENOUGH_BALANCE = "error_not_enough_balance";
 var ERROR_PAYTO_LINK_MISMATCH = "error_payto_link_mismatch";
+var ERROR_PREVIOUS_NOT_FRONTIER = "error_previous_not_frontier";
+var ERROR_AMOUNT_MISMATCH = "error_amount_mismatch";
 var ERROR_NANO_RPC = "error_nano_rpc";
 var ERROR_INVALID_HELPER = "error_invalid_helper";
 var ERROR_FACILITATOR = "error_facilitator";
@@ -119,9 +121,11 @@ var ExactNanoScheme = class {
    * Performs multiple validation steps including:
    * - x402 protocol version check
    * - Account frontier verification
+   * - Sufficient balance check
+   * - Block builds on the account's current frontier (block.previous)
+   * - Block sends exactly the required amount (account balance minus block.balance)
    * - Proof-of-Work validation
    * - Block signature verification
-   * - Sufficient balance check
    *
    * @param payload - The payment payload to verify
    * @param requirements - The expected payment requirements
@@ -177,6 +181,19 @@ var ExactNanoScheme = class {
       if ((0, import_bignumber.default)(balance).minus(payAmount).isNegative()) {
         return constructVerifyInvalidResponse({
           invalidReason: ERROR_NOT_ENOUGH_BALANCE,
+          payer
+        });
+      }
+      if (exactNanoPayload.block.previous.toUpperCase() !== frontier.toUpperCase()) {
+        return constructVerifyInvalidResponse({
+          invalidReason: ERROR_PREVIOUS_NOT_FRONTIER,
+          payer
+        });
+      }
+      const sentAmount = (0, import_bignumber.default)(balance).minus(exactNanoPayload.block.balance);
+      if (!sentAmount.isEqualTo(payAmount)) {
+        return constructVerifyInvalidResponse({
+          invalidReason: ERROR_AMOUNT_MISMATCH,
           payer
         });
       }

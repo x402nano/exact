@@ -42,9 +42,11 @@ declare class ExactNanoScheme implements SchemeNetworkFacilitator {
      * Performs multiple validation steps including:
      * - x402 protocol version check
      * - Account frontier verification
+     * - Sufficient balance check
+     * - Block builds on the account's current frontier (block.previous)
+     * - Block sends exactly the required amount (account balance minus block.balance)
      * - Proof-of-Work validation
      * - Block signature verification
-     * - Sufficient balance check
      *
      * @param payload - The payment payload to verify
      * @param requirements - The expected payment requirements
