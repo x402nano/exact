@@ -27,8 +27,6 @@ const ERROR_INVALID_WORK: string = 'error_invalid_work'
 const ERROR_NO_ACCOUNT_FRONTIER: string = 'error_no_account_frontier'
 const ERROR_NOT_ENOUGH_BALANCE: string = 'error_not_enough_balance'
 const ERROR_PAYTO_LINK_MISMATCH: string = 'error_payto_link_mismatch'
-const ERROR_PREVIOUS_NOT_FRONTIER: string = 'error_previous_not_frontier'
-const ERROR_AMOUNT_MISMATCH: string = 'error_amount_mismatch'
 const ERROR_NANO_RPC: string = 'error_nano_rpc'
 const ERROR_INVALID_HELPER: string = 'error_invalid_helper'
 const ERROR_FACILITATOR: string = 'error_facilitator'
@@ -164,11 +162,9 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
    * Performs multiple validation steps including:
    * - x402 protocol version check
    * - Account frontier verification
-   * - Sufficient balance check
-   * - Block builds on the account's current frontier (block.previous)
-   * - Block sends exactly the required amount (account balance minus block.balance)
    * - Proof-of-Work validation
    * - Block signature verification
+   * - Sufficient balance check
    *
    * @param payload - The payment payload to verify
    * @param requirements - The expected payment requirements
@@ -211,10 +207,23 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
 
       // -----
       // Verify that when link field in block is decoded as a Nano account
-      // (link_as_account), it exactly matches payTo account
+      // (link_as_account), it exactly matches payTo account, and that the
+      // signed hexadecimal link field matches the payTo public key.
+      const normalizedPayTo = requirements.payTo.replace(XRB_PREFIX, NANO_PREFIX)
+      let expectedLinkPublicKey = ''
+      try {
+        expectedLinkPublicKey = Nano.Crypto.derivePublicKeyFromAccount({
+          account: normalizedPayTo,
+        })
+      } catch {
+        return constructVerifyInvalidResponse({
+          invalidReason: ERROR_PAYTO_LINK_MISMATCH,
+          payer,
+        })
+      }
       if (
-        requirements.payTo.replace(XRB_PREFIX, NANO_PREFIX) !==
-        exactNanoPayload.block.link_as_account
+        normalizedPayTo !== exactNanoPayload.block.link_as_account ||
+        expectedLinkPublicKey.toUpperCase() !== exactNanoPayload.block.link.toUpperCase()
       ) {
         return constructVerifyInvalidResponse({
           invalidReason: ERROR_PAYTO_LINK_MISMATCH,
@@ -248,35 +257,27 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       }
 
       // -----
-      // Check if payer has enough balance to perform payment
-      if (BigNumber(balance).minus(payAmount).isNegative()) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_NOT_ENOUGH_BALANCE,
-          payer,
-        })
-      }
-
-      // -----
-      // Verify that the block builds on the account's current frontier.
-      // A block on any other previous is a fork or a gap and cannot settle,
-      // and the PoW below is checked against the frontier.
+      // Verify that the block's previous hash matches the account's current frontier
       if (exactNanoPayload.block.previous.toUpperCase() !== frontier.toUpperCase()) {
         return constructVerifyInvalidResponse({
-          invalidReason: ERROR_PREVIOUS_NOT_FRONTIER,
+          invalidReason: ERROR_INVALID_BLOCK,
           payer,
         })
       }
 
       // -----
-      // Verify that the block sends exactly the required amount: the account
-      // balance minus block.balance must equal requirements.amount (scheme
-      // specification, facilitator verification step 2). Without this check a
-      // signed block that sends less than the amount, down to 1 raw, verifies
-      // and settles.
-      const sentAmount = BigNumber(balance).minus(exactNanoPayload.block.balance)
-      if (!sentAmount.isEqualTo(payAmount)) {
+      // Check if payer has enough balance to perform payment and that the signed
+      // state block actually debits at least payAmount from the current balance
+      const blockBalance = BigNumber(exactNanoPayload.block.balance)
+      const sentAmount = BigNumber(balance).minus(blockBalance)
+      if (
+        BigNumber(balance).minus(payAmount).isNegative() ||
+        blockBalance.isNegative() ||
+        !blockBalance.isInteger() ||
+        sentAmount.isLessThan(payAmount)
+      ) {
         return constructVerifyInvalidResponse({
-          invalidReason: ERROR_AMOUNT_MISMATCH,
+          invalidReason: ERROR_NOT_ENOUGH_BALANCE,
           payer,
         })
       }
@@ -367,12 +368,13 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
     try {
       const exactNanoPayload = payload.payload as ExactNanoPayload
 
-      // Validate Nano block format
-      if (!NANO_SEND_BLOCK.safeParse(exactNanoPayload.block).success) {
+      // Validate Nano block format and payment requirements before broadcasting
+      const verifyResult = await this.verify(payload, requirements)
+      if (!verifyResult.isValid) {
         return constructSettleUnsuccessfulResponse({
           network: payload.accepted.network,
-          errorReason: ERROR_INVALID_BLOCK,
-          payer: '',
+          errorReason: verifyResult.invalidReason ?? ERROR_INVALID_BLOCK,
+          payer: verifyResult.payer,
         })
       }
 
