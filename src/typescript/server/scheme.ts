@@ -118,10 +118,8 @@ export class ExactNanoScheme implements SchemeNetworkServer {
         throw new Error(`Asset must be specified as "${CURRENCY_CODE_XNO}" for AssetAmount`)
       }
 
-      let price_to_string: string = parseAmountToString(price)
-
       return {
-        amount: convertNanoToRaw(price_to_string),
+        amount: price.amount,
         asset: price.asset,
         extra: price.extra || {},
       }

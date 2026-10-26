@@ -305,6 +305,20 @@ describe('@x402nano/exact/server', () => {
       extra: {},
     })
   })
+
+  it('should preserve AssetAmount raw units and metadata', async () => {
+    const extra = { source: 'merchant-config' }
+
+    expect(await scheme.parsePrice({ asset: ASSET, amount: '1', extra }, NETWORK)).toStrictEqual({
+      amount: '1',
+      asset: ASSET,
+      extra,
+    })
+
+    await expect(scheme.parsePrice({ asset: 'USD', amount: '1' }, NETWORK)).rejects.toThrow(
+      `Asset must be specified as "${CURRENCY_CODE_XNO}" for AssetAmount`,
+    )
+  })
 })
 
 // ---------------------------------------------------
