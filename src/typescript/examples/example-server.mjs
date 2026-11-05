@@ -15,14 +15,15 @@ confirmation hash back to the Client.
 
 import express from "express"
 import { x402ResourceServer, HTTPFacilitatorClient } from "@x402/core/server"
-import { ExactNanoScheme } from "@x402nano/exact/server"
-import 'dotenv/config'
+import { ExactNanoServerScheme as ExactNanoScheme, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
+
+const NANO_NETWORK = process.env.NANO_NETWORK || NANO_MAINNET_CAIP2
 
 // Define the endpoints that will be protected behind a 402 Payment required paywall
 const endpointConfigs = {
   [`GET ${process.env.RESOURCE_PATH}`]: {
     scheme: "exact",
-    network: "nano:mainnet",
+    network: NANO_NETWORK,
     // price can be in raw units (e.g. 100000000000000000000000000) or use decimal for nano units (e.g. 0.0001)
     price: process.env.PAYMENT_REQUIREMENT_AMOUNT,
     payTo: process.env.PAYMENT_REQUIREMENT_PAY_TO,
@@ -36,7 +37,7 @@ const endpointConfigs = {
   /*   
   [`GET /resource-to-pay-for-1`]: {
     scheme: "exact",
-    network: "nano:mainnet",    
+    network: NANO_NETWORK,    
     price: "100000000000000000000000000",
     payTo: "nano_1...",
     description: "Resource to pay for (#1)",
@@ -44,7 +45,7 @@ const endpointConfigs = {
   },  
   [`GET /resource-to-pay-for-2`]: {
     scheme: "exact",
-    network: "nano:mainnet",    
+    network: NANO_NETWORK,    
     price: "0.0001",   // parses automatically to 100000000000000000000000000 raw units
     payTo: "nano_1...",
     description: "Resource to pay for (#2)",
@@ -59,7 +60,7 @@ const resourceServer = new x402ResourceServer(facilitator)
 
 const exactNanoSchema = new ExactNanoScheme()
 
-resourceServer.register( "nano:mainnet", exactNanoSchema)
+resourceServer.register(NANO_NETWORK, exactNanoSchema)
 
 // Optional: add logging / hooks for verification and settlement of payment payloads
 resourceServer

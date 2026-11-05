@@ -1,64 +1,14 @@
-import {
+import type {
   AssetAmount,
   Network,
   PaymentRequirements,
+  PaymentFlowConfig,
   Price,
   SchemeNetworkServer,
-} from '@x402/core/types'
-import { Nano } from 'nano-sdk'
-import BigNumber from 'bignumber.js'
-import { ASSET_AMOUNT, STRING_DECIMAL } from '@x402nano/typescript-common'
-import { CURRENCY_CODE_XNO } from '../common'
-
-/**
- * Converts a nano amount to its raw unit equivalent.
- *
- * @param amount - The amount in Nano (string representation)
- * @returns The equivalent amount in raw units as a string
- *
- * @example
- * ```ts
- * const raw = convertNanoToRaw("1.5") // Converts 1.5 Nano to raw
- * ```
- */
-function convertNanoToRaw(amount: string) {
-  // if price is in nano units then convert to raw units
-  return Nano.Math.nanoToRaw({ nano: amount })
-}
-
-/**
- * Handles conversion of raw or nano unit amount to a string
- *
- * @param amount - Amount in raw units (e.g. 1000000000000000000000000000) or nano units (e.g. 0.001)
- * @returns string representation of amount
- *
- * @example
- * ```ts
- * const rawString = parseAmountToString(1000000000000000000000000000) // returns "1000000000000000000000000000"
- * const nanoString = parseAmountToString(0.001) // returns "1000000000000000000000000000"
- * ```
- */
-function parseAmountToString(amount: string | number | unknown) {
-  if (typeof amount === 'string') {
-    const amount_ = amount.trim()
-
-    try {
-      if (!STRING_DECIMAL.safeParse(amount_).success) {
-        return amount_
-      }
-      return BigNumber(amount_).toFixed()
-    } catch (error) {
-      void error
-      return amount_
-    }
-  }
-
-  if (typeof amount === 'number') {
-    return BigNumber(amount).toFixed()
-  }
-
-  return String(amount)
-}
+} from "@x402/core/types";
+import { ASSET_AMOUNT } from "../schemas";
+import { ERROR_PRICE } from "../constants";
+import { priceRawUnits, isRawUnits, isNanoUnits, convertNanoToRaw } from "../utils";
 
 // ---------------------------------------------------
 
@@ -72,73 +22,60 @@ export class ExactNanoScheme implements SchemeNetworkServer {
   /**
    * The payment scheme identifier.
    */
-  readonly scheme = 'exact'
-
-  /**
-   * Asset-transfer method used when a payment requirement does not specify one.
-   *
-   * "exact" payments are a single on-chain transfer with no wire-level
-   * asset-transfer method, so core's reserved "default" key applies.
-   */
-  readonly defaultAssetTransferMethod = 'default'
-
-  /**
-   * Payment flows supported per asset-transfer method.
-   *
-   * "exact" uses the authorization flow: the facilitator verifies the signed
-   * block before the resource handler runs and only broadcasts it once the
-   * handler succeeds. Clients are therefore never charged for failed requests.
-   */
+  readonly scheme = "exact";
+  readonly defaultAssetTransferMethod = "default";
   readonly paymentFlows = {
-    default: {
-      default: 'authorization',
-      supported: ['authorization'],
-    },
-  } as const
+    default: { supported: ["authorization"], default: "authorization" },
+  } as const satisfies Record<string, PaymentFlowConfig>;
 
   /**
    * Parses a price into an AssetAmount object.
    *
-   * Supports both direct AssetAmount input and simple price values (string/number).
-   * Converts all amounts to raw units for consistency.
+   * Normalizes all Price amounts to raw units for consistency.
    *
-   * @param price - The price to parse, either as a direct AssetAmount or a simple value
-   * @param network - The target network (unused in this implementation)
+   * @param price - The price to parse as an AssetAmount object, string or number
+   * @param network - The target network (unused in this function as we are dealing with a single native token)
    * @returns Promise that resolves to the parsed AssetAmount
    *
    * @example
    * ```ts
-   * const asset = await server.parsePrice("2.5", "nano:mainnet")
+   * const asset = await server.parsePrice(
+   *  price: {
+   *    amount: "2500000000000000000000000",
+   *    asset: "XNO",
+   *  },
+   *  "nano:mainnet"
+   * )
    * // Returns { amount: "2500000000000000000000000", asset: "XNO", extra: {} }
    * ```
    */
   async parsePrice(price: Price, network: Network): Promise<AssetAmount> {
-    if (typeof price === 'object' && ASSET_AMOUNT.safeParse(price).success) {
-      if (price.asset.toUpperCase() !== CURRENCY_CODE_XNO) {
-        throw new Error(`Asset must be specified as "${CURRENCY_CODE_XNO}" for AssetAmount`)
+    void network;
+    const errorMessage = `${ERROR_PRICE} - Invalid Price.`;
+    let price_: AssetAmount;
+
+    const priceParsedToAssetAmount = ASSET_AMOUNT.safeParse(price);
+
+    if (!priceParsedToAssetAmount.success) {
+      if (typeof price === "number") {
+        price = String(price);
       }
 
-      let price_to_string: string = parseAmountToString(price)
-
-      return {
-        amount: convertNanoToRaw(price_to_string),
-        asset: price.asset,
-        extra: price.extra || {},
+      if (typeof price === "string") {
+        if (isRawUnits(price)) {
+          price_ = priceRawUnits(price);
+        } else if (isNanoUnits(price)) {
+          price_ = priceRawUnits(convertNanoToRaw(price));
+        } else {
+          throw new Error(errorMessage);
+        }
+      } else {
+        throw new Error(errorMessage);
       }
+    } else {
+      price_ = priceParsedToAssetAmount.data;
     }
-
-    let price_to_string: string = parseAmountToString(price)
-
-    let isRawUnits
-    if (!STRING_DECIMAL.safeParse(price_to_string).success) {
-      isRawUnits = true
-    }
-
-    return {
-      amount: isRawUnits ? price_to_string : convertNanoToRaw(price_to_string),
-      asset: CURRENCY_CODE_XNO,
-      extra: {},
-    }
+    return price_;
   }
 
   /**
@@ -156,16 +93,18 @@ export class ExactNanoScheme implements SchemeNetworkServer {
   enhancePaymentRequirements(
     paymentRequirements: PaymentRequirements,
     supportedKind: {
-      x402Version: number
-      scheme: string
-      network: Network
-      extra?: Record<string, unknown>
+      x402Version: number;
+      scheme: string;
+      network: Network;
+      extra?: Record<string, unknown>;
     },
     extensionKeys: string[],
   ): Promise<PaymentRequirements> {
-    void supportedKind
-    void extensionKeys
+    void supportedKind;
+    void extensionKeys;
 
-    return Promise.resolve(paymentRequirements)
+    const extra: Record<string, unknown> = { ...paymentRequirements.extra };
+
+    return Promise.resolve({ ...paymentRequirements, extra });
   }
 }

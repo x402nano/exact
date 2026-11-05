@@ -13,54 +13,105 @@ Implementation of [`exact`](https://github.com/x402nano/schemes/blob/main/exact.
 ## Features
 
 - Enables fixed-amount Nano (XNO) payments of any size over x402 protocol
-- `Client`, `Resource Server` & `Facilitator` implementations
+- `Client`, `Resource Server` & `Facilitator` component implementations
 - Supports the `nano:*` family of networks e.g. `nano:mainnet`, `nano:betanet`
 - Ready-to-run [examples](https://github.com/x402nano/exact/tree/main/src/typescript/examples) (`Client` ↔ `Resource Server` ↔ `Facilitator`)
 
-## Implementations
+## Components
 
-|                       | Role                                                                                                                                        | Used By                          |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **`Client`**          | Controls a payer's Nano account, capable of generating and signing send state blocks to pay for a resource.                                 | Wallet developers                |
-| **`Resource Server`** | Defines payment requirements for a resource (e.g. API, content), and delivers the resource to **`Client`** on successful payment.           | API providers, content providers |
-| **`Facilitator`**     | Service that verifies and/or settles payments for a **`Resource Server`** (performed by a third-party or the **`Resource Server`** itself). | API providers, content providers |
+| Component                      | Role                                                                                                                                        | Used By                          |                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | -------------------------------- |
+| **`Client`**          | Creates a payment payload (which includes a Nano send block) to satisfy a payment requirement returned by a **`Resource Server`**.                                 | Wallet developers                | [usage example](https://github.com/x402nano/exact/blob/main/src/typescript/examples/example-client.mjs) / [docs](https://github.com/x402nano/exact/blob/main/src/typescript/client/README.md)                |
+| **`Resource Server`** | Defines payment requirements for a resource (e.g. API, content), and delivers the resource to **`Client`** on successful payment.           | API providers, content providers | [usage example](https://github.com/x402nano/exact/blob/main/src/typescript/examples/example-server.mjs) / [docs](https://github.com/x402nano/exact/blob/main/src/typescript/server/README.md)                |
+| **`Facilitator`**     | Verifies and settles payments for a **`Resource Server`**. | API providers, content providers | [usage example](https://github.com/x402nano/exact/blob/main/src/typescript/examples/example-facilitator.mjs) / [docs](https://github.com/x402nano/exact/blob/main/src/typescript/facilitator/README.md)                |
 
-See [`/examples/`](https://github.com/x402nano/exact/tree/main/src/typescript/examples) folder for complete runnable versions of all three implementations.
+See [`/examples/`](https://github.com/x402nano/exact/tree/main/src/typescript/examples) folder for runnable versions of all three components.
 
 ## Installation
 
-> **TypeScript**
+### **TypeScript**
 
 ```bash
-npm install @x402nano/exact @x402nano/helper
+npm install @x402nano/exact
 ```
 
-## Usage
-
 ## Project Structure
+
+### **TypeScript**
 
 ```text
 src/typescript/
  ├── client/          # "exact" scheme implementation for Clients
  ├── server/          # "exact" scheme implementation for Resource Servers
  ├── facilitator/     # "exact" scheme implementation for Facilitators
- ├── common.ts        # Shared functions and constants
- └── examples/        # Ready-to-run example files
+ ├── examples/        # Ready-to-run example files
+ └── test/            # Test files
+    ├── unit/         # Unit testing
+    └── integration/  # Integration testing
+ .env.example         # Example environment variables. Copy, rename to .env and change values.
+                        Used in runnable examples and integration testing
 ```
 
 ## Development
 
-> **TypeScript**
+### **TypeScript**
 
 ```bash
-# Install dependencies
 npm install
 
-# Build (ESM + CJS + types)
+# Builds ESM + CJS + types
 npm run build
+```
 
-# Run unit tests
+## Unit Tests
+
+### **TypeScript**
+
+```bash
 npm run test
+```
+
+## Integration Tests
+
+### **TypeScript**
+
+To run an integration test which performs a live Nano transaction:
+
+1. **Copy `/src/typescript/.env.example` to `/src/typescript/.env`**
+
+2. **Setup environment variables in `/src/typescript/.env`**
+
+   ```env
+   # Nano account private key of Client (64 hex characters – NOT the wallet seed!)
+   CLIENT_NANO_ACCOUNT_PRIVATE_KEY=...
+
+   # Nano RPC endpoint
+   NANO_RPC_URL=https://nano-rpc-provider.com/rpc
+
+   # Optional – dedicated work server (defaults to NANO_RPC_URL value)
+   NANO_WORK_GENERATION_URL=https://work-server.example.com/rpc
+
+   # Where payments should be sent (your receiving Nano account)
+   PAYMENT_REQUIREMENT_PAY_TO=nano_1abc...123
+
+   # Amount to charge – in **raw units**
+   # Example: 1000000000000000000000000000 raw units (0.001 nano units)
+   PAYMENT_REQUIREMENT_AMOUNT=1000000000000000000000000000
+
+   # Path & ports
+   RESOURCE_PATH=/premium-api
+   RESOURCE_SERVER_PORT=3121
+   FACILITATOR_PORT=3122
+
+   # Nano network to use (leave blank or omit altogether to default to "nano:mainnet")
+   NANO_NETWORK=nano:mainnet
+   ```
+
+   **Important security note**: Never commit `/src/typescript/.env` to version control.
+3. **Run the integration test** 
+
+```bash
+npm run test:integration
 ```
 
 ## Security Notes 🚨
@@ -69,13 +120,12 @@ This is new software and hasn't yet been deployed heavily in production environm
 
 ## Contributing
 
-We welcome developers to submit implementations of the `exact` scheme in other languages e.g. Python, Go, etc...
+We welcome developers to submit full implementations of the `exact` scheme in other languages e.g. Python, Go, etc...
 
 Join the [x402 Nano Discord](https://discord.gg/JAMgp8EXQk) for coordination and discussion!
 
 ## Related Projects
 
-- [@x402nano/helper](https://github.com/x402nano/helper) – `Helper` module used by `exact` scheme
 - [x402.org](https://www.x402.org) – Official x402 protocol website
 - [nano.org](https://nano.org) – Official Nano website
 

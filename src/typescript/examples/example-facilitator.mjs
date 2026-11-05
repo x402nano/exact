@@ -18,10 +18,8 @@ A Facilitator exposes three endpoints:
 */
 
 import { x402Facilitator } from '@x402/core/facilitator'
-import { ExactNanoScheme } from '@x402nano/exact/facilitator'
-import { Helper } from '@x402nano/helper'
+import { ExactNanoFacilitatorScheme as ExactNanoScheme, createFacilitatorNanoSigner, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
 import express from 'express'
-import 'dotenv/config'
 
 // Nano RPC is required for the Facilitator to function
 if (!process.env.NANO_RPC_URL) {
@@ -37,19 +35,27 @@ app.use(express.json())
 // Create x402Facilitator instance from x402 protocol core code.
 const facilitator = new x402Facilitator()
 
-// Create instance of Helper that will help with Nano RPC communication.
-// Pass in configuration object with the URL of the Nano RPC to use for Nano network communication.
-const helper = new Helper({
-  NANO_RPC_URL: process.env.NANO_RPC_URL
+// Create Signer that will help with Nano RPC communication.
+// Pass in configuration object with the URL of the Nano RPC to use for Nano network communication,
+// and API key for Nano RPC if applicable.
+const signer = new createFacilitatorNanoSigner({
+  rpcUrl: process.env.NANO_RPC_URL,
+  rpcApiKey: process.env.NANO_RPC_API_KEY,
+  workGenerationUrl: process.env.NANO_WORK_GENERATION_URL,
+  workGenerationApiKey: process.env.NANO_WORK_GENERATION_API_KEY,  
 })
 
-// Create instance of the implementation of the x402 Nano "exact" payment scheme for x402 Facilitator.
-// Pass in Helper instance just created.
-const exactNanoScheme = new ExactNanoScheme(helper)
+signer
+  .onBeforeWorkGeneration(({ hash }) => {console.log(`[Facilitator] Generating work for ${hash}`)})
+  .onAfterWorkGeneration(({ hash, work }) => {console.log(`✅ Work value ${work} generated for ${hash}`)});
 
-// Register the Nano mainnet as a network that the x402 Facilitator verifies and settles transactions for.
+// Create instance of the implementation of the x402 Nano "exact" payment scheme for x402 Facilitator.
+// Pass in Signer just created.
+const exactNanoScheme = new ExactNanoScheme(signer)
+
+// Register the Nano network that the x402 Facilitator verifies and settles transactions for.
 // Also pass the scheme instance just created.
-facilitator.register('nano:mainnet', exactNanoScheme)
+facilitator.register(process.env.NANO_NETWORK || NANO_MAINNET_CAIP2, exactNanoScheme)
 
 // Optional: hooks to log verify/settle attempts.
 facilitator

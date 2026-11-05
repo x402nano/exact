@@ -1,5 +1,6 @@
-import { PaymentPayload, PaymentRequirements, SchemeNetworkClient } from '@x402/core/types'
-import { HelperClass, ExactNanoPayload, NanoSendBlock } from '@x402nano/typescript-common'
+import { PaymentPayload, PaymentRequirements, SchemeNetworkClient } from "@x402/core/types";
+import { SignerClass, ExactNanoPayload } from "../types";
+import { StateBlock } from "nano-sdk/blocks";
 
 /**
  * Implementation of the x402 Nano "exact" payment scheme for Clients.
@@ -11,14 +12,14 @@ export class ExactNanoScheme implements SchemeNetworkClient {
   /**
    * The payment scheme identifier.
    */
-  readonly scheme = 'exact'
+  readonly scheme = "exact";
 
   /**
    * Creates a new ExactNanoClient instance.
    *
-   * @param helper - The Helper instance used for communicating with Nano RPC and generating send blocks
+   * @param signer - The Signer instance used for generating send blocks and communicating with Nano RPC
    */
-  constructor(private readonly helper: HelperClass) {}
+  constructor(private readonly signer: SignerClass) {}
 
   /**
    * Creates a payment payload for the Exact scheme with the specified requirements.
@@ -30,7 +31,7 @@ export class ExactNanoScheme implements SchemeNetworkClient {
    *
    * @example
    * ```ts
-   * const payload = await client.createPaymentPayload(1, {
+   * const payload = await client.createPaymentPayload(2, {
    *   payTo: 'nano_...',
    *   amount: '1000000000000000000000000'
    * })
@@ -39,30 +40,48 @@ export class ExactNanoScheme implements SchemeNetworkClient {
   async createPaymentPayload(
     x402Version: number,
     paymentRequirements: PaymentRequirements,
-  ): Promise<Pick<PaymentPayload, 'x402Version' | 'payload'>> {
+  ): Promise<Pick<PaymentPayload, "x402Version" | "payload">> {
+    let skipWorkGeneration: boolean = false;
+
     if (!paymentRequirements.payTo?.trim()) {
-      throw new Error('Missing required payment field: payTo')
+      throw new Error("Missing required payment field: payTo");
     }
 
     if (!paymentRequirements.amount?.trim()) {
-      throw new Error('Missing required payment field: amount')
+      throw new Error("Missing required payment field: amount");
     }
 
-    let sendBlock: NanoSendBlock
+    if (
+      paymentRequirements?.extra.workOptional === true &&
+      !this.signer.getConfig().workGenerator &&
+      !this.signer.getConfig().workGenerationUrl
+    ) {
+      skipWorkGeneration = true;
+    }
+
+    let sendBlock: StateBlock;
     try {
-      sendBlock = await this.helper.generateSendBlock({
+      sendBlock = await this.signer.generateSendBlock({
         payTo: paymentRequirements.payTo,
         amount: paymentRequirements.amount,
-      })
+        network: paymentRequirements.network,
+        skipWorkGeneration,
+      });
     } catch (error) {
-      throw new Error(`Failed to generate Nano send block for Client \nCause: ${error.message}`)
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to generate Nano send block for Client. Cause: ${error.message.includes("Resulting raw amount must not be negative") ? "Not enough balance" : error.message}`,
+        );
+      }
+
+      throw new Error(`Failed to generate Nano send block for Client`);
     }
 
-    const payload: ExactNanoPayload = { block: sendBlock }
+    const payload: ExactNanoPayload = { block: sendBlock };
 
     return {
       x402Version,
       payload,
-    }
+    };
   }
 }

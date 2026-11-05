@@ -8,6 +8,7 @@
     "prebuild": "node -e \"require('fs').rm('dist', { recursive: true, force: true }, () => {})\"",
     "build": "tsup",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.mjs",
     "format": "prettier -c .prettierrc --write \"**/*.{ts,js,cjs,json,md}\"",
     "format:check": "prettier -c .prettierrc --check \"**/*.{ts,js,cjs,json,md}\"",
     "lint": "eslint . --ext .ts --fix",
@@ -39,11 +40,9 @@
   },
   "dependencies": {
     "@x402/core": "^2.22.0",
-    "@x402nano/helper": "^0.2.0",
-    "@x402nano/typescript-common": "^0.1.0",
-    "bignumber.js": "^9.3.1",
-    "nano-sdk": "^1.0.1",
-    "zod": "^4.2.1"
+    "zod": "^4.4.3",
+    "nano-sdk": "^1.0.7",
+    "bignumber.js": "^11.1.3"
   },
   "keywords": [
     "x402",

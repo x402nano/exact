@@ -25,7 +25,7 @@ Client ──► Resource Server  (GET /premium-api)
            │
            └─ 402 Payment Required + PAYMENT-REQUIRED header
            │
-Client ──► creates Nano send block (via Helper)
+Client ──► creates Nano send block (via Signer)
            │
 Client ──► Resource Server  (same GET + PAYMENT-SIGNATURE header)
            │
@@ -40,21 +40,13 @@ Resource Server ──► Facilitator (/settle) → Nano network
 
 - **Nano account** and its associated private key (🚨 **not** wallet seed 🚨). Use a Nano account with a small balance.
 - Access to a **Nano RPC** endpoint
-- (Recommended) A dedicated **work generation** endpoint for faster Proof-of-Work generation. Defaults to Nano RPC if unspecified.
+- Access to a **work generation** endpoint for Proof-of-Work generation. This can also be the **Nano RPC** endpoint if it allows the `work_generate` action.
 
 ## Setup
 
-1. **Navigate to `/src/typescript/examples` folder**
+1. **Copy `/src/typescript/.env.example` to `/src/typescript/.env`**
 
-2. **Install required packages**
-
-   `npm install`
-
-3. **Copy example environment file**
-
-   Copy `.env.example` to `.env`
-
-4. **Change values in `.env`**
+2. **Setup environment variables in `/src/typescript/.env`**
 
    ```env
    # Nano account private key of Client (64 hex characters – NOT the wallet seed!)
@@ -64,7 +56,7 @@ Resource Server ──► Facilitator (/settle) → Nano network
    NANO_RPC_URL=https://rpc.nano.org
 
    # Optional – dedicated work server (defaults to NANO_RPC_URL value)
-   # NANO_WORK_GENERATION_URL=https://work-server.example.com/rpc
+   NANO_WORK_GENERATION_URL=https://work-server.example.com/rpc
 
    # Where payments should be sent (your receiving Nano account)
    PAYMENT_REQUIREMENT_PAY_TO=nano_1abc...123
@@ -79,28 +71,32 @@ Resource Server ──► Facilitator (/settle) → Nano network
    FACILITATOR_PORT=3122
    ```
 
-   **Important security note**: Never commit `.env` or expose your private key.
+   **Important security note**: Never commit `/src/typescript/.env` to version control.
 
-## Running the demo
+4. **Navigate to `/src/typescript/examples/` folder**
 
-Open **three terminals** in the `exact/src/typescript/examples/` directory and run the specified scripts in the following order:
+5. **Install required packages using `npm install`**
+
+## Running the examples
+
+Open **three terminals** in the `exact/src/typescript/examples/` directory and run the specified commands in the following order:
 
 **`Terminal 1 – Facilitator`**
 
 ```bash
-node example-facilitator.mjs
+npm run facilitator
 ```
 
 **`Terminal 2 – Resource Server`**
 
 ```bash
-node example-server.mjs
+npm run server
 ```
 
 **`Terminal 3 – Client`**
 
 ```bash
-node example-client.mjs
+npm run client
 ```
 
 Expected output in `Terminal 3 - Client` (indicating successful payment flow):
@@ -118,22 +114,24 @@ Expected output in `Terminal 3 - Client` (indicating successful payment flow):
 ## Project Structure
 
 ```
+exact/src/typescript/
+└── .env.example             # Example environment variables. Copy to .env in the same directory and setup with your values.
 exact/src/typescript/examples/
-├── .env.example
 ├── example-client.mjs       # Demonstrates x402Client + ExactNanoScheme
 ├── example-facilitator.mjs  # Demonstrates x402Facilitator + ExactNanoScheme
 └── example-server.mjs       # Demonstrates x402ResourceServer + ExactNanoScheme
+
 ```
 
 ## Packages Used
 
 - `@x402/core` — core x402 protocol logic (x402Client, x402ResourceServer, x402Facilitator)
-- `@x402nano/exact` — Nano-specific "exact" payment scheme
-- `@x402nano/helper` — Nano RPC & work generation utilities
+- `@x402nano/exact` — Nano-specific "exact" payment scheme implementation
+- `express` - Needed for example Facilitator and example Resource Server
 
 ## Security Note
 
-- **Never** use a mainnet private key containing a lot of Nano in examples. Test with **very small amounts** only.
+- **Never** use a mainnet private key containing a lot of Nano for these examples. Test with **very small amounts** only.
 
 ## Learn More
 

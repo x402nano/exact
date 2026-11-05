@@ -1,12 +1,11 @@
 {
-  // "extends": "../../../tsconfig.base.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "declaration": false,
-    "module": "es2015",
-    "moduleResolution": "bundler",
-    "lib": ["ES2020"],
-    "allowJs": false,
-    "checkJs": false
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
-  "include": ["src/typescript", "test/index.test.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "src/typescript/test"]
 }

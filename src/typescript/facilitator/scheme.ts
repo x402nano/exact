@@ -5,107 +5,177 @@ import {
   VerifyResponse,
   SettleResponse,
   Network,
-} from '@x402/core/types'
-import BigNumber from 'bignumber.js'
+} from "@x402/core/types";
+import BigNumber from "bignumber.js";
+import { HashString, AccountString, WorkDifficultyString } from "nano-sdk/types";
+import { SignerClass, ExactNanoPayload, ProcessBlockResponse } from "../types";
 import {
-  HelperClass,
-  ExactNanoPayload,
-  ProcessBlockResponse,
-  Hex64,
-  NANO_SEND_BLOCK,
-  SEND_BLOCK_WORK_THRESHOLD,
-  NANO_ACCOUNT_PRIVATE_KEY_PROPERTY,
-} from '@x402nano/typescript-common'
-import { Nano } from 'nano-sdk'
-
-/**
- * Error codes used throughout the ExactNanoScheme implementation.
- */
-const ERROR_X402_VERSION_NOT_SUPPORTED: string = 'error_x402_version_not_supported'
-const ERROR_INVALID_BLOCK: string = 'error_invalid_block'
-const ERROR_INVALID_WORK: string = 'error_invalid_work'
-const ERROR_NO_ACCOUNT_FRONTIER: string = 'error_no_account_frontier'
-const ERROR_NOT_ENOUGH_BALANCE: string = 'error_not_enough_balance'
-const ERROR_PAYTO_LINK_MISMATCH: string = 'error_payto_link_mismatch'
-const ERROR_PREVIOUS_NOT_FRONTIER: string = 'error_previous_not_frontier'
-const ERROR_AMOUNT_MISMATCH: string = 'error_amount_mismatch'
-const ERROR_NANO_RPC: string = 'error_nano_rpc'
-const ERROR_INVALID_HELPER: string = 'error_invalid_helper'
-const ERROR_FACILITATOR: string = 'error_facilitator'
+  CURRENCY_CODE_XNO,
+  SEND_BLOCK_WORK_THRESHOLD_MAINNET,
+  SEND_BLOCK_WORK_THRESHOLD_BETANET,
+  DEFAULT_MAX_TIMEOUT_SECONDS,
+  ERROR_UNSUPPORTED_X402_VERSION,
+  ERROR_UNSUPPORTED_NETWORK,
+  ERROR_NETWORK_MISMATCH,
+  ERROR_UNSUPPORTED_SCHEME,
+  ERROR_INVALID_ASSET,
+  ERROR_INVALID_BLOCK,
+  ERROR_PAYTO_LINK_MISMATCH,
+  ERROR_NO_ACCOUNT_FRONTIER,
+  ERROR_PREVIOUS_NOT_FRONTIER,
+  ERROR_AMOUNT_MISMATCH,
+  ERROR_INVALID_WORK,
+  ERROR_TIMEOUT_EXPIRED,
+  ERROR_ACCOUNT_NOT_FOUND,
+  ERROR_BLOCK_ALREADY_CONFIRMED,
+  ERROR_BLOCK_AWAITING_CONFIRMATION,
+  ERROR_BLOCK_NOT_BROADCAST,
+  ERROR_FACILITATOR,
+  ERROR_NANO_RPC,
+  ERROR_NOT_ENOUGH_BALANCE,
+  NANO_BETANET_CAIP2,
+  NANO_TESTNET_CAIP2,
+  CLIENT_NO_WORK,
+  ERROR_WORK_UNAVAILABLE,
+  ONE_SECOND,
+} from "../constants";
+import { ensureNanoPrefix } from "../utils";
+import {
+  derivePublicKeyFromAccount,
+  verifyBlock as verifyBlock_,
+  verifyWork,
+  hashBlock as hashBlock_,
+  deriveAccountFromLink,
+} from "nano-sdk/crypto";
+import { StateBlock } from "nano-sdk/blocks";
 
 /**
  * List of supported x402 protocol versions by this implementation.
  */
-const SUPPORTED_X402_VERSIONS: number[] = [2]
+const SUPPORTED_X402_VERSIONS: number[] = [2];
 
 /**
- * Current Nano address prefix.
+ * Prefix used by all supported networks
  */
-const NANO_PREFIX: string = 'nano_'
+const NANO_NETWORK_PREFIX = "nano:";
 
 /**
- * Legacy Nano address prefix.
- */
-const XRB_PREFIX: string = 'xrb_'
-
-/**
- * Parameters for constructing an invalid verification response.
- */
-type ConstructVerifyInvalidResponseParams = {
-  invalidReason: string
-  payer: string
-}
-
-/**
- * Constructs a standardized invalid verification response.
+ * Constructs part of a standardized invalid verification response.
  *
- * @param params - The parameters for the response
- * @param params.invalidReason - The reason for the invalidation
- * @param params.payer - The Nano account that initiated the payment
- * @returns A VerifyResponse object indicating failure
+ * @param payer - Nano account making the payment
+ * @returns A function completing the standardized invalid verification response
  */
-function constructVerifyInvalidResponse({
-  invalidReason,
-  payer,
-}: ConstructVerifyInvalidResponseParams): VerifyResponse {
-  return {
-    isValid: false,
-    invalidReason,
-    payer,
-  }
+function constructVerifyInvalidResponse(payer: AccountString) {
+  /**
+   * Completes the standardized invalid verification response.
+   *
+   * @param invalidReason - Reason for the invalid verification response
+   * @returns A VerifyResponse object indicating failure
+   */
+  return function (invalidReason: string): VerifyResponse {
+    return {
+      isValid: false,
+      invalidReason,
+      payer,
+    };
+  };
 }
 
 /**
- * Parameters for constructing an unsuccessful settlement response.
- */
-type ConstructSettleUnsuccessfulResponseParams = {
-  network: Network
-  errorReason: string
-  payer: string
-}
-
-/**
- * Constructs a standardized unsuccessful settlement response.
+ * Constructs part of a standardized unsuccessful settlement response.
  *
- * @param params - The parameters for the response
- * @param params.network - Nano network being used
- * @param params.errorReason - The reason for the unsuccessful settlement
- * @param params.payer - The Nano account that initiated the payment
+ * @param network - nano network to use
+ * @param payer - Nano account making the payment
  * @returns A SettleResponse object indicating failure
  */
-function constructSettleUnsuccessfulResponse({
-  network,
-  errorReason,
-  payer,
-}: ConstructSettleUnsuccessfulResponseParams): SettleResponse {
-  return {
-    success: false,
-    network,
-    transaction: '',
-    errorReason,
-    payer,
+function constructSettleUnsuccessfulResponse(network: Network, payer: AccountString) {
+  /**
+   * Completes the standardized unsuccessful settlement response.
+   *
+   * @param errorReason - Reason for the unsuccessful settlement response
+   * @param blockHash - (Optional) The block hash of a previously confirmed block
+   * @returns A SettleResponse object indicating failure
+   */
+  return function (errorReason: string, blockHash: HashString | undefined = ""): SettleResponse {
+    return {
+      success: false,
+      network,
+      transaction: blockHash,
+      errorReason,
+      payer,
+    };
+  };
+}
+
+/**
+ * Calculates the hash of a block.
+ *
+ * @param block - Block to calculate hash for
+ * @returns Calculated hash of the block
+ */
+function hashBlock(block: StateBlock): HashString {
+  return hashBlock_({
+    block: {
+      account: block.account,
+      previous: block.previous,
+      representative: block.representative,
+      balance: block.balance,
+      link: block.link,
+    },
+  });
+}
+
+/**
+ * Verifies a block.
+ *
+ * @param block - Block to verify
+ * @returns Block verification status, true for verified, false for unverified
+ */
+function verifyBlock(block: StateBlock): boolean {
+  try {
+    let publicKey = derivePublicKeyFromAccount({
+      account: block.account,
+    });
+
+    let isBlockVerified = verifyBlock_({
+      block: block,
+      publicKey,
+    });
+
+    return isBlockVerified;
+  } catch (error) {
+    void error;
+    return false;
   }
 }
+
+/**
+ * Determines if The Facilitator should generate work
+ *
+ * @param params - Parameters object
+ * @param params.signer - The Signer instance used by the Facilitator
+ * @param params.clientWork - The work generated by the Client (if any)
+ * @returns Promise resolving to the generated work
+ * @throws Error if something goes wrong during work generation
+ */
+function shouldGenerateWork({
+  signer,
+  clientWork,
+}: {
+  signer: SignerClass;
+  clientWork: WorkDifficultyString;
+}) {
+  const { workGenerator, workGenerationUrl } = signer.getConfig();
+  return (workGenerator || workGenerationUrl) && clientWork === CLIENT_NO_WORK;
+}
+
+/**
+ * Pauses execution for a given time (non-blocking).
+ *
+ * @param milliseconds - Number of milliseconds to pause execution for
+ * @returns Promise that resolves after number of milliseconds has elapsed
+ */
+const sleep = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
 // ---------------------------------------------------
 
@@ -119,228 +189,57 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
   /**
    * The payment scheme identifier.
    */
-  readonly scheme: string = 'exact'
+  readonly scheme: string = "exact";
 
   /**
-   * CAIP-2 identifier for the Nano network family e.g. nano:mainnet, nano:testnet
+   * CAIP-2 identifier for the Nano network family e.g. nano:mainnet, nano:betanet
    */
-  readonly caipFamily: string = 'nano:*'
+  readonly caipFamily: string = "nano:*";
 
   /**
    * Creates a new ExactNanoScheme instance.
    *
-   * @param helper - The Helper instance used for communicating with Nano RPC and generating send blocks
+   * @param signer - The Signer instance used for generating send blocks and communicating with Nano RPC
    */
-  constructor(private readonly helper: HelperClass) {
-    if (NANO_ACCOUNT_PRIVATE_KEY_PROPERTY in helper.getConfig()) {
-      throw new Error(
-        `[${ERROR_INVALID_HELPER}] - ${NANO_ACCOUNT_PRIVATE_KEY_PROPERTY} is set in Helper config for Facilitator and must be removed.`,
-      )
-    }
-  }
+  constructor(private readonly signer: SignerClass) {}
 
   /**
    * Gets additional scheme-specific metadata (none for this implementation).
    *
+   * @param network - Current network
    * @returns undefined as no extra metadata is provided
    */
-  getExtra() {
-    return undefined
+  getExtra(network: Network) {
+    void network;
+    if (this.signer.getConfig().workGenerator || this.signer.getConfig().workGenerationUrl) {
+      return {
+        workOptional: true,
+      };
+    }
+    return undefined;
   }
 
   /**
    * Gets the list of signers required for this scheme (none for this implementation).
    *
-   * @param _ - Unused parameter (requirements)
    * @returns Empty array as no additional signers are needed
    */
-  getSigners(_) {
-    return []
+  getSigners() {
+    return [];
   }
 
   /**
-   * Verifies a payment payload for validity against the specified payment requirements.
-   *
-   * Performs multiple validation steps including:
-   * - x402 protocol version check
-   * - Account frontier verification
-   * - Sufficient balance check
-   * - Block builds on the account's current frontier (block.previous)
-   * - Block sends exactly the required amount (account balance minus block.balance)
-   * - Proof-of-Work validation
-   * - Block signature verification
+   * Verifies a payment payload.
    *
    * @param payload - The payment payload to verify
-   * @param requirements - The expected payment requirements
-   * @returns Promise resolving to a verification response
-   *
-   * @example
-   * ```ts
-   * const result = await facilitator.verify(paymentPayload, paymentRequirements)
-   * if (result.isValid) {
-   *   console.log('Payment verified successfully')
-   * }
-   * ```
+   * @param requirements - The payment requirements
+   * @returns Promise resolving to verification response
    */
   async verify(
     payload: PaymentPayload,
     requirements: PaymentRequirements,
   ): Promise<VerifyResponse> {
-    try {
-      const exactNanoPayload = payload.payload as ExactNanoPayload
-
-      // -----
-      // Validate Nano block format
-      if (!NANO_SEND_BLOCK.safeParse(exactNanoPayload.block).success) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_INVALID_BLOCK,
-          payer: '',
-        })
-      }
-
-      const payer = exactNanoPayload.block.account
-
-      // -----
-      // Check if x402 version is supported
-      if (!SUPPORTED_X402_VERSIONS.includes(payload.x402Version)) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_X402_VERSION_NOT_SUPPORTED,
-          payer,
-        })
-      }
-
-      // -----
-      // Verify that when link field in block is decoded as a Nano account
-      // (link_as_account), it exactly matches payTo account
-      if (
-        requirements.payTo.replace(XRB_PREFIX, NANO_PREFIX) !==
-        exactNanoPayload.block.link_as_account
-      ) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_PAYTO_LINK_MISMATCH,
-          payer,
-        })
-      }
-      // -----
-
-      const payAmount = requirements.amount
-
-      let getAccountInfoResponse = await this.helper.getAccountInfo({
-        account: exactNanoPayload.block.account,
-      })
-
-      if ('error' in getAccountInfoResponse) {
-        return constructVerifyInvalidResponse({
-          invalidReason: `[${ERROR_NANO_RPC}]: ${getAccountInfoResponse.error}`,
-          payer,
-        })
-      }
-
-      let { frontier, balance } = getAccountInfoResponse
-
-      // -----
-      // Verify that frontier exists for payers's Nano account (i.e. the account is opened)
-      if (!frontier) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_NO_ACCOUNT_FRONTIER,
-          payer,
-        })
-      }
-
-      // -----
-      // Check if payer has enough balance to perform payment
-      if (BigNumber(balance).minus(payAmount).isNegative()) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_NOT_ENOUGH_BALANCE,
-          payer,
-        })
-      }
-
-      // -----
-      // Verify that the block builds on the account's current frontier.
-      // A block on any other previous is a fork or a gap and cannot settle,
-      // and the PoW below is checked against the frontier.
-      if (exactNanoPayload.block.previous.toUpperCase() !== frontier.toUpperCase()) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_PREVIOUS_NOT_FRONTIER,
-          payer,
-        })
-      }
-
-      // -----
-      // Verify that the block sends exactly the required amount: the account
-      // balance minus block.balance must equal requirements.amount (scheme
-      // specification, facilitator verification step 2). Without this check a
-      // signed block that sends less than the amount, down to 1 raw, verifies
-      // and settles.
-      const sentAmount = BigNumber(balance).minus(exactNanoPayload.block.balance)
-      if (!sentAmount.isEqualTo(payAmount)) {
-        return constructVerifyInvalidResponse({
-          invalidReason: ERROR_AMOUNT_MISMATCH,
-          payer,
-        })
-      }
-
-      // -----
-      // Check if supplied Proof-of-Work (PoW) for block is valid
-      try {
-        let isWorkValid = Nano.Crypto.verifyWork({
-          hash: frontier,
-          work: exactNanoPayload.block.work,
-          threshold: SEND_BLOCK_WORK_THRESHOLD,
-        })
-
-        if (!isWorkValid) {
-          throw new Error()
-        }
-      } catch (error) {
-        return constructVerifyInvalidResponse({
-          invalidReason:
-            `${ERROR_INVALID_WORK}` + (error instanceof Error ? ` - ${error.message} ` : ``),
-          payer,
-        })
-      }
-
-      // -----
-      // Verify block
-
-      try {
-        let publicKey = Nano.Crypto.derivePublicKeyFromAccount({
-          account: exactNanoPayload.block.account,
-        })
-
-        let isBlockVerified = Nano.Crypto.verifyBlock({
-          block: exactNanoPayload.block as ExactNanoPayload['block'] & {
-            link_as_account: string
-          },
-          publicKey,
-        })
-
-        if (!isBlockVerified) {
-          throw new Error()
-        }
-      } catch (error) {
-        return constructVerifyInvalidResponse({
-          invalidReason:
-            `${ERROR_INVALID_BLOCK}` + (error instanceof Error ? ` - ${error.message} ` : ``),
-          payer,
-        })
-      }
-
-      const facilitatorSuccess: VerifyResponse = {
-        isValid: true,
-        invalidReason: undefined,
-        payer,
-      }
-
-      return facilitatorSuccess
-    } catch (error) {
-      // Handle unexpected errors
-      return constructVerifyInvalidResponse({
-        invalidReason: `[${ERROR_FACILITATOR}] - ${error.message}`,
-        payer: '',
-      })
-    }
+    return await this._verify(payload, requirements);
   }
 
   /**
@@ -364,53 +263,376 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
     payload: PaymentPayload,
     requirements: PaymentRequirements,
   ): Promise<SettleResponse> {
-    try {
-      const exactNanoPayload = payload.payload as ExactNanoPayload
+    const exactNanoPayload = payload.payload as ExactNanoPayload;
 
-      // Validate Nano block format
-      if (!NANO_SEND_BLOCK.safeParse(exactNanoPayload.block).success) {
-        return constructSettleUnsuccessfulResponse({
-          network: payload.accepted.network,
-          errorReason: ERROR_INVALID_BLOCK,
-          payer: '',
-        })
-      }
+    const constructSettleUnsuccessfulResponse_ = constructSettleUnsuccessfulResponse(
+      payload?.accepted?.network,
+      exactNanoPayload?.block?.account,
+    );
 
-      const unsuccessfulResponse = constructSettleUnsuccessfulResponse({
-        network: payload.accepted.network,
-        errorReason: ERROR_NANO_RPC,
-        payer: exactNanoPayload.block.account,
-      })
-
-      let getProcessBlockResponse: ProcessBlockResponse
+    // Check if Facilitator should generate work for the send block
+    if (shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
       try {
-        getProcessBlockResponse = await this.helper.processBlock({ block: exactNanoPayload.block })
+        exactNanoPayload.block.work = await this.signer.generateWork({
+          block: exactNanoPayload.block,
+          network: requirements.network,
+        });
       } catch (error) {
-        void error
-        return unsuccessfulResponse
+        void error;
+        return constructSettleUnsuccessfulResponse_(ERROR_WORK_UNAVAILABLE);
+      }
+    }
+
+    // Re-verify
+    const { isValid, invalidReason = "" } = await this._verify(payload, requirements);
+    if (!isValid) {
+      if (
+        invalidReason === ERROR_BLOCK_ALREADY_CONFIRMED ||
+        invalidReason === ERROR_BLOCK_AWAITING_CONFIRMATION
+      ) {
+        const blockHash = hashBlock(exactNanoPayload.block);
+        return constructSettleUnsuccessfulResponse_(invalidReason, blockHash);
+      }
+      return constructSettleUnsuccessfulResponse_(invalidReason || ERROR_FACILITATOR);
+    }
+
+    try {
+      if ("getBlockInfo" in this.signer) {
+        const blockHash = hashBlock(exactNanoPayload.block);
+
+        try {
+          const getBlockInfoResponse = await this.signer.getBlockInfo({
+            hash: blockHash,
+          });
+
+          if (getBlockInfoResponse.confirmed === "true") {
+            return constructSettleUnsuccessfulResponse_(ERROR_BLOCK_ALREADY_CONFIRMED, blockHash);
+          } else if (getBlockInfoResponse.confirmed === "false") {
+            return constructSettleUnsuccessfulResponse_(
+              ERROR_BLOCK_AWAITING_CONFIRMATION,
+              blockHash,
+            );
+          }
+        } catch (error) {
+          void error;
+          return constructSettleUnsuccessfulResponse_(ERROR_NANO_RPC);
+        }
       }
 
-      let hash: Hex64 = getProcessBlockResponse.hash
-
-      if ('error' in getProcessBlockResponse || !hash) {
-        return unsuccessfulResponse
+      let getProcessBlockResponse: ProcessBlockResponse;
+      try {
+        getProcessBlockResponse = await this.signer.processBlock({
+          block: exactNanoPayload.block,
+        });
+      } catch (error) {
+        void error;
+        return constructSettleUnsuccessfulResponse_(ERROR_NANO_RPC);
       }
 
-      let successResponse: SettleResponse = {
-        success: true,
-        transaction: hash,
-        network: payload.accepted.network,
-        payer: exactNanoPayload.block.account,
+      let hash: HashString | undefined;
+      if ("hash" in getProcessBlockResponse) {
+        hash = getProcessBlockResponse.hash;
       }
 
-      return successResponse
+      if ("error" in getProcessBlockResponse || !hash) {
+        return constructSettleUnsuccessfulResponse_(ERROR_BLOCK_NOT_BROADCAST);
+      }
+
+      // If using the deprecated @x402nano/helper package then skip block confirmation checking by returning with success early.
+      // (reason: getBlockInfo not supported in deprecated @x402nano/helper package)
+      if (!this.signer.getBlockInfo) {
+        const successResponse: SettleResponse = {
+          success: true,
+          transaction: hash,
+          network: payload.accepted.network,
+          payer: exactNanoPayload.block.account,
+        };
+
+        return successResponse;
+      }
+
+      // Pause for half a second to allow time for transaction confirmation to take place on the network
+      await sleep(ONE_SECOND * 0.5);
+
+      let elapsedSeconds = 0; // rough estimate of seconds elapsed waiting for transaction confirmation
+      while (elapsedSeconds < (requirements.maxTimeoutSeconds || DEFAULT_MAX_TIMEOUT_SECONDS)) {
+        elapsedSeconds++;
+
+        let getBlockInfoResponse;
+        try {
+          getBlockInfoResponse = await this.signer.getBlockInfo({
+            hash,
+          });
+        } catch (error) {
+          void error;
+          return constructSettleUnsuccessfulResponse_(ERROR_NANO_RPC);
+        }
+
+        if ("confirmed" in getBlockInfoResponse && getBlockInfoResponse.confirmed === "true") {
+          const successResponse: SettleResponse = {
+            success: true,
+            transaction: hash,
+            network: payload.accepted.network,
+            payer: exactNanoPayload.block.account,
+          };
+
+          return successResponse;
+        }
+
+        await sleep(ONE_SECOND);
+      }
+
+      return constructSettleUnsuccessfulResponse_(ERROR_TIMEOUT_EXPIRED);
     } catch (error) {
+      void error;
       // Handle unexpected errors
-      return constructSettleUnsuccessfulResponse({
-        network: payload?.accepted?.network,
-        errorReason: `[${ERROR_FACILITATOR}] - ${error.message}`,
-        payer: '',
-      })
+      return constructSettleUnsuccessfulResponse_(ERROR_FACILITATOR);
+    }
+  }
+
+  /**
+   * Verifies a payment payload for validity against the specified payment requirements.
+   *
+   * Performs multiple verification checks:
+   * 1. x402 Version Check
+   * 2. Scheme Check
+   * 3. Network Supported Check
+   * 4. Network Mismatch Check
+   * 5. Asset Check
+   * 6. Block Structure Check
+   * 7. Valid Block Check
+   * 8. payTo Check
+   * 9. Previous Confirmation Check
+   * 10. Account Check
+   * 11. Frontier Hash Check
+   * 12. Balance Check
+   * 13. Work Difficulty Check
+   * (Documentation for all checks can be found in the Verification section of the x402 exact scheme for Nano)
+   *
+   * @param payload - The payment payload to verify
+   * @param requirements - The expected payment requirements
+   * @returns Promise resolving to a verification response
+   *
+   * @example
+   * ```ts
+   * const result = await facilitator.verify(paymentPayload, paymentRequirements)
+   * if (result.isValid) {
+   *   console.log('Payment verified successfully')
+   * }
+   * ```
+   */
+  private async _verify(
+    payload: PaymentPayload,
+    requirements: PaymentRequirements,
+  ): Promise<VerifyResponse> {
+    const exactNanoPayload = payload.payload as ExactNanoPayload;
+
+    const constructVerifyInvalidResponse_ = constructVerifyInvalidResponse(
+      exactNanoPayload?.block?.account,
+    );
+
+    try {
+      // -----
+      // 1. x402 Version Check
+
+      if (!SUPPORTED_X402_VERSIONS.includes(payload.x402Version)) {
+        return constructVerifyInvalidResponse_(ERROR_UNSUPPORTED_X402_VERSION);
+      }
+
+      // -----
+      // 2. Scheme Check
+
+      if (requirements.scheme !== this.scheme || payload.accepted.scheme !== this.scheme) {
+        return constructVerifyInvalidResponse_(ERROR_UNSUPPORTED_SCHEME);
+      }
+
+      // -----
+      // 3. Network Supported Check
+
+      if (
+        !requirements.network.startsWith(NANO_NETWORK_PREFIX) ||
+        !payload.accepted.network.startsWith(NANO_NETWORK_PREFIX)
+      ) {
+        return constructVerifyInvalidResponse_(ERROR_UNSUPPORTED_NETWORK);
+      }
+
+      // -----
+      // 4. Network Mismatch Check
+
+      if (requirements.network !== payload.accepted.network) {
+        return constructVerifyInvalidResponse_(ERROR_NETWORK_MISMATCH);
+      }
+
+      // -----
+      // 5. Asset Check
+
+      if (
+        requirements.asset !== CURRENCY_CODE_XNO ||
+        payload.accepted?.asset !== CURRENCY_CODE_XNO
+      ) {
+        return constructVerifyInvalidResponse_(ERROR_INVALID_ASSET);
+      }
+
+      // -----
+      // 6. Block Structure Check
+
+      if (!StateBlock().safeParse(exactNanoPayload.block).success) {
+        return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
+      }
+
+      const payer = exactNanoPayload.block.account;
+
+      // -----
+      // 7. Valid Block Check
+      if (!verifyBlock(exactNanoPayload.block)) {
+        return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
+      }
+
+      // -----
+      // 8. payTo Check
+      if (
+        !(
+          ensureNanoPrefix(requirements.payTo) === ensureNanoPrefix(payload.accepted.payTo) &&
+          ensureNanoPrefix(payload.accepted.payTo) ===
+            ensureNanoPrefix(exactNanoPayload.block.link_as_account) &&
+          deriveAccountFromLink({ link: exactNanoPayload.block.link }) ===
+            exactNanoPayload.block.link_as_account
+        )
+      ) {
+        return constructVerifyInvalidResponse_(ERROR_PAYTO_LINK_MISMATCH);
+      }
+
+      // -----
+      // 9. Previous Confirmation Check
+
+      // Only proceed with confirmation check if not using the deprecated @x402nano/helper package.
+      // (reason: getBlockInfo not supported in deprecated @x402nano/helper package)
+      if (this.signer.getBlockInfo) {
+        const blockHash: HashString = hashBlock(exactNanoPayload.block);
+
+        let getBlockInfoResponse;
+        try {
+          getBlockInfoResponse = await this.signer.getBlockInfo({
+            hash: blockHash,
+          });
+        } catch (error) {
+          void error;
+          return constructVerifyInvalidResponse_(ERROR_NANO_RPC);
+        }
+
+        // If block found
+        if (getBlockInfoResponse.contents) {
+          // Make sure the block found is a send block that matches the amount in payment requirements
+          if (
+            getBlockInfoResponse.amount !== payload.accepted.amount ||
+            getBlockInfoResponse.subtype !== "send"
+          ) {
+            return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+          } else if (getBlockInfoResponse.confirmed === "true") {
+            return constructVerifyInvalidResponse_(ERROR_BLOCK_ALREADY_CONFIRMED);
+          } else if (getBlockInfoResponse.confirmed === "false") {
+            return constructVerifyInvalidResponse_(ERROR_BLOCK_AWAITING_CONFIRMATION);
+          }
+        }
+      }
+
+      // -----
+      // 10. Account Check
+
+      let getAccountInfoResponse;
+
+      try {
+        getAccountInfoResponse = await this.signer.getAccountInfo({
+          account: exactNanoPayload.block.account,
+        });
+      } catch (error) {
+        void error;
+        return constructVerifyInvalidResponse_(ERROR_NANO_RPC);
+      }
+
+      if ("error" in getAccountInfoResponse) {
+        return constructVerifyInvalidResponse_(ERROR_ACCOUNT_NOT_FOUND);
+      }
+
+      let {
+        frontier,
+        confirmed_frontier,
+        confirmed_balance: previousBalance,
+      } = getAccountInfoResponse;
+
+      // Verify that frontier exists for payers's Nano account (i.e. the account is opened)
+      if (!frontier) {
+        return constructVerifyInvalidResponse_(ERROR_NO_ACCOUNT_FRONTIER);
+      }
+
+      // -----
+      // 11. Frontier Hash Check
+      if (frontier !== exactNanoPayload.block.previous || frontier !== confirmed_frontier) {
+        return constructVerifyInvalidResponse_(ERROR_PREVIOUS_NOT_FRONTIER);
+      }
+
+      // -----
+      // 12. Balance Check
+
+      if (payload.accepted.amount !== requirements.amount) {
+        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+      }
+
+      if (BigNumber(previousBalance).minus(payload.accepted.amount).isNegative()) {
+        return constructVerifyInvalidResponse_(ERROR_NOT_ENOUGH_BALANCE);
+      }
+
+      const balanceDelta = BigNumber(previousBalance).minus(exactNanoPayload.block.balance);
+
+      if (!balanceDelta.isEqualTo(payload.accepted.amount)) {
+        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+      }
+
+      // -----
+      // 13. Work Difficulty Check
+
+      if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
+        let workThreshold: WorkDifficultyString;
+        if (
+          requirements.network === NANO_BETANET_CAIP2 ||
+          requirements.network === NANO_TESTNET_CAIP2
+        ) {
+          workThreshold = SEND_BLOCK_WORK_THRESHOLD_BETANET;
+        } else {
+          workThreshold = SEND_BLOCK_WORK_THRESHOLD_MAINNET;
+        }
+
+        try {
+          let isWorkValid = verifyWork({
+            hash: frontier,
+            work: exactNanoPayload.block.work,
+            threshold: workThreshold,
+          });
+
+          if (!isWorkValid) {
+            throw new Error();
+          }
+        } catch (error) {
+          void error;
+          return constructVerifyInvalidResponse_(ERROR_INVALID_WORK);
+        }
+      }
+
+      // -----
+      // All verification checks passed!
+      // -----
+
+      const facilitatorSuccess: VerifyResponse = {
+        isValid: true,
+        invalidReason: undefined,
+        payer,
+      };
+
+      return facilitatorSuccess;
+    } catch (error) {
+      void error;
+      // Handle unexpected errors
+      return constructVerifyInvalidResponse_(ERROR_FACILITATOR);
     }
   }
 }
