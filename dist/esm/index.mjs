@@ -3,10 +3,10 @@ import {
 } from "./chunk-I4PM46R4.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme2
-} from "./chunk-34AA4ESH.mjs";
+} from "./chunk-2KBYIKPP.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme3
-} from "./chunk-RXPTEJZP.mjs";
+} from "./chunk-IDR6XYTU.mjs";
 import {
   CLIENT_NO_WORK,
   CLIENT_SIGNER_CONFIG,
@@ -21,6 +21,7 @@ import {
   ERROR_BLOCK_NOT_BROADCAST,
   ERROR_CONFIG,
   ERROR_FACILITATOR,
+  ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_INVALID_ASSET,
   ERROR_INVALID_BLOCK,
   ERROR_INVALID_WORK,
@@ -61,7 +62,7 @@ import {
   validateNanoAccountPrivateKey,
   validateNanoRpcUrl,
   validateNanoWorkGenerationUrl
-} from "./chunk-7UHAVRU7.mjs";
+} from "./chunk-PAVQFMWI.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -435,6 +436,7 @@ export {
   ERROR_BLOCK_NOT_BROADCAST,
   ERROR_CONFIG,
   ERROR_FACILITATOR,
+  ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_INVALID_ASSET,
   ERROR_INVALID_BLOCK,
   ERROR_INVALID_WORK,

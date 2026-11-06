@@ -3,9 +3,9 @@ import { defineConfig } from "tsup";
 const baseConfig = {
   entry: {
     index: "src/typescript/index.ts",
-    "exact/client/index": "src/typescript/client/index.ts",
-    "exact/server/index": "src/typescript/server/index.ts",
-    "exact/facilitator/index": "src/typescript/facilitator/index.ts",
+    "client/index": "src/typescript/client/index.ts",
+    "server/index": "src/typescript/server/index.ts",
+    "facilitator/index": "src/typescript/facilitator/index.ts",
   },
   dts: {
     resolve: true,

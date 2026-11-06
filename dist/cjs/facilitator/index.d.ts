@@ -1,5 +1,5 @@
 import { SchemeNetworkFacilitator, Network, PaymentPayload, PaymentRequirements, VerifyResponse, SettleResponse } from '@x402/core/types';
-import { S as SignerClass } from '../../types-D7EwDFVM.mjs';
+import { S as SignerClass } from '../types-D7EwDFVM.js';
 import 'zod';
 import 'nano-sdk/types';
 import 'nano-sdk/blocks';
@@ -76,14 +76,15 @@ declare class ExactNanoScheme implements SchemeNetworkFacilitator {
      * 3. Network Supported Check
      * 4. Network Mismatch Check
      * 5. Asset Check
-     * 6. Block Structure Check
-     * 7. Valid Block Check
-     * 8. payTo Check
-     * 9. Previous Confirmation Check
-     * 10. Account Check
-     * 11. Frontier Hash Check
-     * 12. Balance Check
-     * 13. Work Difficulty Check
+     * 6. Amount Check
+     * 7. Block Structure Check
+     * 8. Valid Block Check
+     * 9. payTo Check
+     * 10. Previous Confirmation Check
+     * 11. Account Check
+     * 12. Frontier Hash Check
+     * 13. Balance Check
+     * 14. Work Difficulty Check
      * (Documentation for all checks can be found in the Verification section of the x402 exact scheme for Nano)
      *
      * @param payload - The payment payload to verify

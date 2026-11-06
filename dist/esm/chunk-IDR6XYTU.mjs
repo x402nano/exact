@@ -8,6 +8,7 @@ import {
   ERROR_BLOCK_AWAITING_CONFIRMATION,
   ERROR_BLOCK_NOT_BROADCAST,
   ERROR_FACILITATOR,
+  ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_INVALID_ASSET,
   ERROR_INVALID_BLOCK,
   ERROR_INVALID_WORK,
@@ -28,7 +29,7 @@ import {
   SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   ensureNanoPrefix
-} from "./chunk-7UHAVRU7.mjs";
+} from "./chunk-PAVQFMWI.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -275,14 +276,15 @@ var ExactNanoScheme = class {
    * 3. Network Supported Check
    * 4. Network Mismatch Check
    * 5. Asset Check
-   * 6. Block Structure Check
-   * 7. Valid Block Check
-   * 8. payTo Check
-   * 9. Previous Confirmation Check
-   * 10. Account Check
-   * 11. Frontier Hash Check
-   * 12. Balance Check
-   * 13. Work Difficulty Check
+   * 6. Amount Check
+   * 7. Block Structure Check
+   * 8. Valid Block Check
+   * 9. payTo Check
+   * 10. Previous Confirmation Check
+   * 11. Account Check
+   * 12. Frontier Hash Check
+   * 13. Balance Check
+   * 14. Work Difficulty Check
    * (Documentation for all checks can be found in the Verification section of the x402 exact scheme for Nano)
    *
    * @param payload - The payment payload to verify
@@ -317,6 +319,9 @@ var ExactNanoScheme = class {
       }
       if (requirements.asset !== CURRENCY_CODE_XNO || payload.accepted?.asset !== CURRENCY_CODE_XNO) {
         return constructVerifyInvalidResponse_(ERROR_INVALID_ASSET);
+      }
+      if (payload.accepted.amount !== requirements.amount) {
+        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
       }
       if (!StateBlock().safeParse(exactNanoPayload.block).success) {
         return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
@@ -369,8 +374,11 @@ var ExactNanoScheme = class {
       if (!frontier) {
         return constructVerifyInvalidResponse_(ERROR_NO_ACCOUNT_FRONTIER);
       }
-      if (frontier !== exactNanoPayload.block.previous || frontier !== confirmed_frontier) {
+      if (frontier !== exactNanoPayload.block.previous) {
         return constructVerifyInvalidResponse_(ERROR_PREVIOUS_NOT_FRONTIER);
+      }
+      if (frontier !== confirmed_frontier) {
+        return constructVerifyInvalidResponse_(ERROR_FRONTIER_NOT_CONFIRMED);
       }
       if (payload.accepted.amount !== requirements.amount) {
         return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
@@ -419,4 +427,4 @@ var ExactNanoScheme = class {
 export {
   ExactNanoScheme
 };
-//# sourceMappingURL=chunk-RXPTEJZP.mjs.map
+//# sourceMappingURL=chunk-IDR6XYTU.mjs.map

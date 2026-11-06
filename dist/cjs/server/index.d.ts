@@ -44,7 +44,7 @@ declare class ExactNanoScheme implements SchemeNetworkServer {
      * Build payment requirements for this scheme/network combination
      *
      * @param paymentRequirements - The base payment requirements
-     * @param supportedKind - The supported kind from facilitator (unused)
+     * @param supportedKind - The supported kind from facilitator
      * @param supportedKind.x402Version - The x402 version
      * @param supportedKind.scheme - The logical payment scheme
      * @param supportedKind.network - The network identifier in CAIP-2 format

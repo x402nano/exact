@@ -27,6 +27,7 @@ var ERROR_INVALID_BLOCK = "error_invalid_block";
 var ERROR_PAYTO_LINK_MISMATCH = "error_payto_link_mismatch";
 var ERROR_NO_ACCOUNT_FRONTIER = "error_no_account_frontier";
 var ERROR_PREVIOUS_NOT_FRONTIER = "error_previous_not_frontier";
+var ERROR_FRONTIER_NOT_CONFIRMED = "error_frontier_not_confirmed";
 var ERROR_NOT_ENOUGH_BALANCE = "error_not_enough_balance";
 var ERROR_AMOUNT_MISMATCH = "error_amount_mismatch";
 var ERROR_INVALID_WORK = "error_invalid_work";
@@ -301,6 +302,7 @@ export {
   ERROR_PAYTO_LINK_MISMATCH,
   ERROR_NO_ACCOUNT_FRONTIER,
   ERROR_PREVIOUS_NOT_FRONTIER,
+  ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_NOT_ENOUGH_BALANCE,
   ERROR_AMOUNT_MISMATCH,
   ERROR_INVALID_WORK,
@@ -336,4 +338,4 @@ export {
   FACILITATOR_SIGNER_CONFIG,
   ASSET_AMOUNT
 };
-//# sourceMappingURL=chunk-7UHAVRU7.mjs.map
+//# sourceMappingURL=chunk-PAVQFMWI.mjs.map

@@ -1,5 +1,5 @@
 import { SchemeNetworkClient, PaymentRequirements, PaymentPayload } from '@x402/core/types';
-import { S as SignerClass } from '../../types-D7EwDFVM.mjs';
+import { S as SignerClass } from '../types-D7EwDFVM.mjs';
 import 'zod';
 import 'nano-sdk/types';
 import 'nano-sdk/blocks';

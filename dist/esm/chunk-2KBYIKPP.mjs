@@ -5,7 +5,7 @@ import {
   isNanoUnits,
   isRawUnits,
   priceRawUnits
-} from "./chunk-7UHAVRU7.mjs";
+} from "./chunk-PAVQFMWI.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -72,7 +72,7 @@ var ExactNanoScheme = class {
    * Build payment requirements for this scheme/network combination
    *
    * @param paymentRequirements - The base payment requirements
-   * @param supportedKind - The supported kind from facilitator (unused)
+   * @param supportedKind - The supported kind from facilitator
    * @param supportedKind.x402Version - The x402 version
    * @param supportedKind.scheme - The logical payment scheme
    * @param supportedKind.network - The network identifier in CAIP-2 format
@@ -81,9 +81,11 @@ var ExactNanoScheme = class {
    * @returns Promise that resolves to the enhanced payment requirements
    */
   enhancePaymentRequirements(paymentRequirements, supportedKind, extensionKeys) {
-    void supportedKind;
     void extensionKeys;
     const extra = { ...paymentRequirements.extra };
+    if (supportedKind?.extra?.workOptional === true && extra.workOptional === void 0) {
+      extra.workOptional = true;
+    }
     return Promise.resolve({ ...paymentRequirements, extra });
   }
 };
@@ -91,4 +93,4 @@ var ExactNanoScheme = class {
 export {
   ExactNanoScheme
 };
-//# sourceMappingURL=chunk-34AA4ESH.mjs.map
+//# sourceMappingURL=chunk-2KBYIKPP.mjs.map

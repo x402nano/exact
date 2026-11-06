@@ -44,6 +44,7 @@ __export(typescript_exports, {
   ERROR_BLOCK_NOT_BROADCAST: () => ERROR_BLOCK_NOT_BROADCAST,
   ERROR_CONFIG: () => ERROR_CONFIG,
   ERROR_FACILITATOR: () => ERROR_FACILITATOR,
+  ERROR_FRONTIER_NOT_CONFIRMED: () => ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_INVALID_ASSET: () => ERROR_INVALID_ASSET,
   ERROR_INVALID_BLOCK: () => ERROR_INVALID_BLOCK,
   ERROR_INVALID_WORK: () => ERROR_INVALID_WORK,
@@ -186,6 +187,7 @@ var ERROR_INVALID_BLOCK = "error_invalid_block";
 var ERROR_PAYTO_LINK_MISMATCH = "error_payto_link_mismatch";
 var ERROR_NO_ACCOUNT_FRONTIER = "error_no_account_frontier";
 var ERROR_PREVIOUS_NOT_FRONTIER = "error_previous_not_frontier";
+var ERROR_FRONTIER_NOT_CONFIRMED = "error_frontier_not_confirmed";
 var ERROR_NOT_ENOUGH_BALANCE = "error_not_enough_balance";
 var ERROR_AMOUNT_MISMATCH = "error_amount_mismatch";
 var ERROR_INVALID_WORK = "error_invalid_work";
@@ -484,7 +486,7 @@ var ExactNanoScheme2 = class {
    * Build payment requirements for this scheme/network combination
    *
    * @param paymentRequirements - The base payment requirements
-   * @param supportedKind - The supported kind from facilitator (unused)
+   * @param supportedKind - The supported kind from facilitator
    * @param supportedKind.x402Version - The x402 version
    * @param supportedKind.scheme - The logical payment scheme
    * @param supportedKind.network - The network identifier in CAIP-2 format
@@ -493,9 +495,11 @@ var ExactNanoScheme2 = class {
    * @returns Promise that resolves to the enhanced payment requirements
    */
   enhancePaymentRequirements(paymentRequirements, supportedKind, extensionKeys) {
-    void supportedKind;
     void extensionKeys;
     const extra = { ...paymentRequirements.extra };
+    if (supportedKind?.extra?.workOptional === true && extra.workOptional === void 0) {
+      extra.workOptional = true;
+    }
     return Promise.resolve({ ...paymentRequirements, extra });
   }
 };
@@ -736,14 +740,15 @@ var ExactNanoScheme3 = class {
    * 3. Network Supported Check
    * 4. Network Mismatch Check
    * 5. Asset Check
-   * 6. Block Structure Check
-   * 7. Valid Block Check
-   * 8. payTo Check
-   * 9. Previous Confirmation Check
-   * 10. Account Check
-   * 11. Frontier Hash Check
-   * 12. Balance Check
-   * 13. Work Difficulty Check
+   * 6. Amount Check
+   * 7. Block Structure Check
+   * 8. Valid Block Check
+   * 9. payTo Check
+   * 10. Previous Confirmation Check
+   * 11. Account Check
+   * 12. Frontier Hash Check
+   * 13. Balance Check
+   * 14. Work Difficulty Check
    * (Documentation for all checks can be found in the Verification section of the x402 exact scheme for Nano)
    *
    * @param payload - The payment payload to verify
@@ -778,6 +783,9 @@ var ExactNanoScheme3 = class {
       }
       if (requirements.asset !== CURRENCY_CODE_XNO || payload.accepted?.asset !== CURRENCY_CODE_XNO) {
         return constructVerifyInvalidResponse_(ERROR_INVALID_ASSET);
+      }
+      if (payload.accepted.amount !== requirements.amount) {
+        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
       }
       if (!(0, import_blocks2.StateBlock)().safeParse(exactNanoPayload.block).success) {
         return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
@@ -830,8 +838,11 @@ var ExactNanoScheme3 = class {
       if (!frontier) {
         return constructVerifyInvalidResponse_(ERROR_NO_ACCOUNT_FRONTIER);
       }
-      if (frontier !== exactNanoPayload.block.previous || frontier !== confirmed_frontier) {
+      if (frontier !== exactNanoPayload.block.previous) {
         return constructVerifyInvalidResponse_(ERROR_PREVIOUS_NOT_FRONTIER);
+      }
+      if (frontier !== confirmed_frontier) {
+        return constructVerifyInvalidResponse_(ERROR_FRONTIER_NOT_CONFIRMED);
       }
       if (payload.accepted.amount !== requirements.amount) {
         return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
@@ -1247,6 +1258,7 @@ var priceNanoUnits2 = priceNanoUnits;
   ERROR_BLOCK_NOT_BROADCAST,
   ERROR_CONFIG,
   ERROR_FACILITATOR,
+  ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_INVALID_ASSET,
   ERROR_INVALID_BLOCK,
   ERROR_INVALID_WORK,
