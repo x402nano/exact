@@ -1,10 +1,13 @@
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 
-export default defineConfig(({ mode }) => ({
-  test: {
-    env: loadEnv(mode, process.cwd(), ""),
-    include: ["src/typescript/test/integration/**/*.test.ts"],
-  },
-  resolve: {tsconfigPaths: true},
-}));
+export default defineConfig(({ mode }) => {
+  const envVars = loadEnv(mode, process.cwd(), '')
+
+  return {
+    test: {
+      env: envVars,
+      include: ["src/typescript/test/integration/**/*.test.ts"],
+    },
+  }
+})

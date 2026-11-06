@@ -48,8 +48,6 @@ src/typescript/
  └── test/            # Test files
     ├── unit/         # Unit testing
     └── integration/  # Integration testing
- .env.example         # Example environment variables. Copy, rename to .env and change values.
-                        Used in runnable examples and integration testing
 ```
 
 ## Development
@@ -77,9 +75,9 @@ npm run test
 
 To run an integration test which performs a live Nano transaction:
 
-1. **Copy `/src/typescript/.env.example` to `/src/typescript/.env`**
+1. **Copy `.env.example` to `.env`**
 
-2. **Setup environment variables in `/src/typescript/.env`**
+2. **Setup environment variables in `.env`**
 
    ```env
    # Nano account private key of Client (64 hex characters – NOT the wallet seed!)
@@ -107,7 +105,7 @@ To run an integration test which performs a live Nano transaction:
    NANO_NETWORK=nano:mainnet
    ```
 
-   **Important security note**: Never commit `/src/typescript/.env` to version control.
+   **Important security note**: Never commit `.env` to version control.
 3. **Run the integration test** 
 
 ```bash

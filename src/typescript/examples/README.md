@@ -44,9 +44,9 @@ Resource Server ──► Facilitator (/settle) → Nano network
 
 ## Setup
 
-1. **Copy `/src/typescript/.env.example` to `/src/typescript/.env`**
+1. **In project root, copy `.env.example` to `.env`**
 
-2. **Setup environment variables in `/src/typescript/.env`**
+2. **Setup environment variables in `.env`**
 
    ```env
    # Nano account private key of Client (64 hex characters – NOT the wallet seed!)
@@ -114,8 +114,6 @@ Expected output in `Terminal 3 - Client` (indicating successful payment flow):
 ## Project Structure
 
 ```
-exact/src/typescript/
-└── .env.example             # Example environment variables. Copy to .env in the same directory and setup with your values.
 exact/src/typescript/examples/
 ├── example-client.mjs       # Demonstrates x402Client + ExactNanoScheme
 ├── example-facilitator.mjs  # Demonstrates x402Facilitator + ExactNanoScheme

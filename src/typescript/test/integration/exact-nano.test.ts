@@ -40,9 +40,9 @@ import {
   NANO_MAINNET_CAIP2,
 } from "../../../../dist/esm/index.mjs";
 
-const accountPrivateKey = process.env.NANO_ACCOUNT_PRIVATE_KEY || "";
-const nanoAccountToPay = process.env.NANO_ACCOUNT_TO_PAY || "";
-const nanoAmountToPay = process.env.NANO_AMOUNT_TO_PAY || "100000000000000000000000000"; // 0.0001 nano;
+const accountPrivateKey = process.env.CLIENT_NANO_ACCOUNT_PRIVATE_KEY || "";
+const nanoAccountToPay = process.env.PAYMENT_REQUIREMENT_PAY_TO || "";
+const nanoAmountToPay = process.env.PAYMENT_REQUIREMENT_AMOUNT || "100000000000000000000000000"; // 0.0001 nano;
 const rpcUrl = process.env.NANO_RPC_URL || "";
 const rpcApiKey = process.env.NANO_RPC_API_KEY || "";
 const workGenerationUrl = process.env.NANO_WORK_GENERATION_URL || "";
