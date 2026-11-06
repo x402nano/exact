@@ -63,6 +63,7 @@ export const ERROR_INVALID_BLOCK: string = "error_invalid_block";
 export const ERROR_PAYTO_LINK_MISMATCH: string = "error_payto_link_mismatch";
 export const ERROR_NO_ACCOUNT_FRONTIER: string = "error_no_account_frontier";
 export const ERROR_PREVIOUS_NOT_FRONTIER: string = "error_previous_not_frontier";
+export const ERROR_FRONTIER_NOT_CONFIRMED: string = "error_frontier_not_confirmed";
 export const ERROR_NOT_ENOUGH_BALANCE: string = "error_not_enough_balance";
 export const ERROR_AMOUNT_MISMATCH: string = "error_amount_mismatch";
 export const ERROR_INVALID_WORK: string = "error_invalid_work";

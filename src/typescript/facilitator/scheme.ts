@@ -23,6 +23,7 @@ import {
   ERROR_PAYTO_LINK_MISMATCH,
   ERROR_NO_ACCOUNT_FRONTIER,
   ERROR_PREVIOUS_NOT_FRONTIER,
+  ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_AMOUNT_MISMATCH,
   ERROR_INVALID_WORK,
   ERROR_TIMEOUT_EXPIRED,
@@ -567,8 +568,12 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
 
       // -----
       // 11. Frontier Hash Check
-      if (frontier !== exactNanoPayload.block.previous || frontier !== confirmed_frontier) {
+      if (frontier !== exactNanoPayload.block.previous) {
         return constructVerifyInvalidResponse_(ERROR_PREVIOUS_NOT_FRONTIER);
+      }
+
+      if (frontier !== confirmed_frontier) {
+        return constructVerifyInvalidResponse_(ERROR_FRONTIER_NOT_CONFIRMED);
       }
 
       // -----
