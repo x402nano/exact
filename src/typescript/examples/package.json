@@ -3,9 +3,9 @@
   "version": "0.1.1",
   "description": "Minimal, runnable examples showing how to implement the exact scheme for fixed-amount Nano (XNO) payments over x402 protocol",
   "scripts": {
-    "client": "node --env-file=../.env ./example-client.mjs",
-    "server": "node --env-file=../.env ./example-server.mjs",
-    "facilitator": "node --env-file=../.env ./example-facilitator.mjs"
+    "client": "node --env-file=../../../.env ./example-client.mjs",
+    "server": "node --env-file=../../../.env ./example-server.mjs",
+    "facilitator": "node --env-file=../../../.env ./example-facilitator.mjs"
   },  
   "license": "MIT",
   "dependencies": {
