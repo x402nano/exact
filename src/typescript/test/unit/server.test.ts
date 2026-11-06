@@ -70,6 +70,38 @@ describe("@x402nano/exact - Resource Server", () => {
 
   // -----
 
+  it(`should carry the Facilitator's "extra.workOptional" into the Payment Required response when the route config does not set it`, async () => {
+    let facilitatorClient = new HTTPFacilitatorClient();
+
+    facilitatorClient.getSupported = vi.fn().mockResolvedValue({
+      kinds: [
+        {
+          x402Version: SUPPORTED_X402_VERSION,
+          scheme: SCHEME,
+          network: NETWORK,
+          extra: { workOptional: true },
+        },
+      ],
+      extensions: [],
+    });
+
+    let serverWithWorkGeneration = new x402ResourceServer(facilitatorClient);
+    serverWithWorkGeneration.register(NETWORK, new ServerExactNanoScheme());
+    await serverWithWorkGeneration.initialize();
+
+    expect(MOCK_ROUTES[MOCK_ROUTE_A_KEY]).not.toHaveProperty("extra");
+
+    let [requirement] = await serverWithWorkGeneration.buildPaymentRequirements(
+      MOCK_ROUTES[MOCK_ROUTE_A_KEY],
+    );
+
+    expect(requirement.extra).toStrictEqual({ workOptional: true });
+    // a Facilitator that does not advertise work generation leaves "extra" untouched
+    expect(paymentRequirement.extra).toStrictEqual({});
+  });
+
+  // -----
+
   it(`should parse a price (raw units, string type)`, async () => {
     expect(
       await scheme.parsePrice(priceRawUnits("10000000000000000000000000"), NETWORK),

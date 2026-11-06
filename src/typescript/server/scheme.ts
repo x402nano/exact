@@ -82,7 +82,7 @@ export class ExactNanoScheme implements SchemeNetworkServer {
    * Build payment requirements for this scheme/network combination
    *
    * @param paymentRequirements - The base payment requirements
-   * @param supportedKind - The supported kind from facilitator (unused)
+   * @param supportedKind - The supported kind from facilitator
    * @param supportedKind.x402Version - The x402 version
    * @param supportedKind.scheme - The logical payment scheme
    * @param supportedKind.network - The network identifier in CAIP-2 format
@@ -100,10 +100,16 @@ export class ExactNanoScheme implements SchemeNetworkServer {
     },
     extensionKeys: string[],
   ): Promise<PaymentRequirements> {
-    void supportedKind;
     void extensionKeys;
 
     const extra: Record<string, unknown> = { ...paymentRequirements.extra };
+
+    // A Resource Server whose Facilitator advertises `workOptional: true` in SupportedKind
+    // MUST set `extra.workOptional: true` in PaymentRequirements (spec Appendix,
+    // "Who should generate work for the send block?"). Forward the flag unless the route set it.
+    if (supportedKind?.extra?.workOptional === true && extra.workOptional === undefined) {
+      extra.workOptional = true;
+    }
 
     return Promise.resolve({ ...paymentRequirements, extra });
   }
