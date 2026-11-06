@@ -400,14 +400,15 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
    * 3. Network Supported Check
    * 4. Network Mismatch Check
    * 5. Asset Check
-   * 6. Block Structure Check
-   * 7. Valid Block Check
-   * 8. payTo Check
-   * 9. Previous Confirmation Check
-   * 10. Account Check
-   * 11. Frontier Hash Check
-   * 12. Balance Check
-   * 13. Work Difficulty Check
+   * 6. Amount Check
+   * 7. Block Structure Check
+   * 8. Valid Block Check
+   * 9. payTo Check
+   * 10. Previous Confirmation Check
+   * 11. Account Check
+   * 12. Frontier Hash Check
+   * 13. Balance Check
+   * 14. Work Difficulty Check
    * (Documentation for all checks can be found in the Verification section of the x402 exact scheme for Nano)
    *
    * @param payload - The payment payload to verify
@@ -475,7 +476,14 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       }
 
       // -----
-      // 6. Block Structure Check
+      // 6. Amount Check
+
+      if (payload.accepted.amount !== requirements.amount) {
+        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+      }
+
+      // -----
+      // 7. Block Structure Check
 
       if (!StateBlock().safeParse(exactNanoPayload.block).success) {
         return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
@@ -484,13 +492,13 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       const payer = exactNanoPayload.block.account;
 
       // -----
-      // 7. Valid Block Check
+      // 8. Valid Block Check
       if (!verifyBlock(exactNanoPayload.block)) {
         return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
       }
 
       // -----
-      // 8. payTo Check
+      // 9. payTo Check
       if (
         !(
           ensureNanoPrefix(requirements.payTo) === ensureNanoPrefix(payload.accepted.payTo) &&
@@ -504,7 +512,7 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       }
 
       // -----
-      // 9. Previous Confirmation Check
+      // 10. Previous Confirmation Check
 
       // Only proceed with confirmation check if not using the deprecated @x402nano/helper package.
       // (reason: getBlockInfo not supported in deprecated @x402nano/helper package)
@@ -538,7 +546,7 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       }
 
       // -----
-      // 10. Account Check
+      // 11. Account Check
 
       let getAccountInfoResponse;
 
@@ -567,7 +575,7 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       }
 
       // -----
-      // 11. Frontier Hash Check
+      // 12. Frontier Hash Check
       if (frontier !== exactNanoPayload.block.previous) {
         return constructVerifyInvalidResponse_(ERROR_PREVIOUS_NOT_FRONTIER);
       }
@@ -577,7 +585,7 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       }
 
       // -----
-      // 12. Balance Check
+      // 13. Balance Check
 
       if (payload.accepted.amount !== requirements.amount) {
         return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
@@ -594,7 +602,7 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       }
 
       // -----
-      // 13. Work Difficulty Check
+      // 14. Work Difficulty Check
 
       if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
         let workThreshold: WorkDifficultyString;
