@@ -587,10 +587,6 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       // -----
       // 13. Balance Check
 
-      if (payload.accepted.amount !== requirements.amount) {
-        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
-      }
-
       if (BigNumber(previousBalance).minus(payload.accepted.amount).isNegative()) {
         return constructVerifyInvalidResponse_(ERROR_NOT_ENOUGH_BALANCE);
       }
