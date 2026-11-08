@@ -5,6 +5,7 @@ import {
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
+  ERROR_BLOCK_AMOUNT_MISMATCH,
   ERROR_BLOCK_AWAITING_CONFIRMATION,
   ERROR_BLOCK_NOT_BROADCAST,
   ERROR_FACILITATOR,
@@ -29,7 +30,7 @@ import {
   SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   ensureNanoPrefix
-} from "./chunk-PAVQFMWI.mjs";
+} from "./chunk-XRFT33LD.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -346,7 +347,7 @@ var ExactNanoScheme = class {
         }
         if (getBlockInfoResponse.contents) {
           if (getBlockInfoResponse.amount !== payload.accepted.amount || getBlockInfoResponse.subtype !== "send") {
-            return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+            return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
           } else if (getBlockInfoResponse.confirmed === "true") {
             return constructVerifyInvalidResponse_(ERROR_BLOCK_ALREADY_CONFIRMED);
           } else if (getBlockInfoResponse.confirmed === "false") {
@@ -380,15 +381,12 @@ var ExactNanoScheme = class {
       if (frontier !== confirmed_frontier) {
         return constructVerifyInvalidResponse_(ERROR_FRONTIER_NOT_CONFIRMED);
       }
-      if (payload.accepted.amount !== requirements.amount) {
-        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
-      }
       if (BigNumber(previousBalance).minus(payload.accepted.amount).isNegative()) {
         return constructVerifyInvalidResponse_(ERROR_NOT_ENOUGH_BALANCE);
       }
       const balanceDelta = BigNumber(previousBalance).minus(exactNanoPayload.block.balance);
       if (!balanceDelta.isEqualTo(payload.accepted.amount)) {
-        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+        return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
       }
       if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
         let workThreshold;
@@ -427,4 +425,4 @@ var ExactNanoScheme = class {
 export {
   ExactNanoScheme
 };
-//# sourceMappingURL=chunk-IDR6XYTU.mjs.map
+//# sourceMappingURL=chunk-IFM6XUJD.mjs.map

@@ -66,6 +66,7 @@ export const ERROR_PREVIOUS_NOT_FRONTIER: string = "error_previous_not_frontier"
 export const ERROR_FRONTIER_NOT_CONFIRMED: string = "error_frontier_not_confirmed";
 export const ERROR_NOT_ENOUGH_BALANCE: string = "error_not_enough_balance";
 export const ERROR_AMOUNT_MISMATCH: string = "error_amount_mismatch";
+export const ERROR_BLOCK_AMOUNT_MISMATCH: string = "error_block_amount_mismatch";
 export const ERROR_INVALID_WORK: string = "error_invalid_work";
 export const ERROR_TIMEOUT_EXPIRED: string = "error_timeout_expired";
 export const ERROR_ACCOUNT_NOT_FOUND: string = "error_account_not_found";

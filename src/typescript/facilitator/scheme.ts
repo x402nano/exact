@@ -25,6 +25,7 @@ import {
   ERROR_PREVIOUS_NOT_FRONTIER,
   ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_AMOUNT_MISMATCH,
+  ERROR_BLOCK_AMOUNT_MISMATCH,
   ERROR_INVALID_WORK,
   ERROR_TIMEOUT_EXPIRED,
   ERROR_ACCOUNT_NOT_FOUND,
@@ -536,7 +537,7 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
             getBlockInfoResponse.amount !== payload.accepted.amount ||
             getBlockInfoResponse.subtype !== "send"
           ) {
-            return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+            return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
           } else if (getBlockInfoResponse.confirmed === "true") {
             return constructVerifyInvalidResponse_(ERROR_BLOCK_ALREADY_CONFIRMED);
           } else if (getBlockInfoResponse.confirmed === "false") {
@@ -594,7 +595,7 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       const balanceDelta = BigNumber(previousBalance).minus(exactNanoPayload.block.balance);
 
       if (!balanceDelta.isEqualTo(payload.accepted.amount)) {
-        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+        return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
       }
 
       // -----

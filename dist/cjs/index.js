@@ -39,6 +39,7 @@ __export(typescript_exports, {
   ERROR_ACCOUNT_NOT_FOUND: () => ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH: () => ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED: () => ERROR_BLOCK_ALREADY_CONFIRMED,
+  ERROR_BLOCK_AMOUNT_MISMATCH: () => ERROR_BLOCK_AMOUNT_MISMATCH,
   ERROR_BLOCK_AWAITING_CONFIRMATION: () => ERROR_BLOCK_AWAITING_CONFIRMATION,
   ERROR_BLOCK_GENERATION: () => ERROR_BLOCK_GENERATION,
   ERROR_BLOCK_NOT_BROADCAST: () => ERROR_BLOCK_NOT_BROADCAST,
@@ -190,6 +191,7 @@ var ERROR_PREVIOUS_NOT_FRONTIER = "error_previous_not_frontier";
 var ERROR_FRONTIER_NOT_CONFIRMED = "error_frontier_not_confirmed";
 var ERROR_NOT_ENOUGH_BALANCE = "error_not_enough_balance";
 var ERROR_AMOUNT_MISMATCH = "error_amount_mismatch";
+var ERROR_BLOCK_AMOUNT_MISMATCH = "error_block_amount_mismatch";
 var ERROR_INVALID_WORK = "error_invalid_work";
 var ERROR_TIMEOUT_EXPIRED = "error_timeout_expired";
 var ERROR_ACCOUNT_NOT_FOUND = "error_account_not_found";
@@ -810,7 +812,7 @@ var ExactNanoScheme3 = class {
         }
         if (getBlockInfoResponse.contents) {
           if (getBlockInfoResponse.amount !== payload.accepted.amount || getBlockInfoResponse.subtype !== "send") {
-            return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+            return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
           } else if (getBlockInfoResponse.confirmed === "true") {
             return constructVerifyInvalidResponse_(ERROR_BLOCK_ALREADY_CONFIRMED);
           } else if (getBlockInfoResponse.confirmed === "false") {
@@ -844,15 +846,12 @@ var ExactNanoScheme3 = class {
       if (frontier !== confirmed_frontier) {
         return constructVerifyInvalidResponse_(ERROR_FRONTIER_NOT_CONFIRMED);
       }
-      if (payload.accepted.amount !== requirements.amount) {
-        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
-      }
       if ((0, import_bignumber2.default)(previousBalance).minus(payload.accepted.amount).isNegative()) {
         return constructVerifyInvalidResponse_(ERROR_NOT_ENOUGH_BALANCE);
       }
       const balanceDelta = (0, import_bignumber2.default)(previousBalance).minus(exactNanoPayload.block.balance);
       if (!balanceDelta.isEqualTo(payload.accepted.amount)) {
-        return constructVerifyInvalidResponse_(ERROR_AMOUNT_MISMATCH);
+        return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
       }
       if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
         let workThreshold;
@@ -1253,6 +1252,7 @@ var priceNanoUnits2 = priceNanoUnits;
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
+  ERROR_BLOCK_AMOUNT_MISMATCH,
   ERROR_BLOCK_AWAITING_CONFIRMATION,
   ERROR_BLOCK_GENERATION,
   ERROR_BLOCK_NOT_BROADCAST,

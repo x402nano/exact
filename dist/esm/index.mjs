@@ -3,10 +3,10 @@ import {
 } from "./chunk-I4PM46R4.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme2
-} from "./chunk-2KBYIKPP.mjs";
+} from "./chunk-GPP63M2B.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme3
-} from "./chunk-IDR6XYTU.mjs";
+} from "./chunk-IFM6XUJD.mjs";
 import {
   CLIENT_NO_WORK,
   CLIENT_SIGNER_CONFIG,
@@ -16,6 +16,7 @@ import {
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
+  ERROR_BLOCK_AMOUNT_MISMATCH,
   ERROR_BLOCK_AWAITING_CONFIRMATION,
   ERROR_BLOCK_GENERATION,
   ERROR_BLOCK_NOT_BROADCAST,
@@ -62,7 +63,7 @@ import {
   validateNanoAccountPrivateKey,
   validateNanoRpcUrl,
   validateNanoWorkGenerationUrl
-} from "./chunk-PAVQFMWI.mjs";
+} from "./chunk-XRFT33LD.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -431,6 +432,7 @@ export {
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
+  ERROR_BLOCK_AMOUNT_MISMATCH,
   ERROR_BLOCK_AWAITING_CONFIRMATION,
   ERROR_BLOCK_GENERATION,
   ERROR_BLOCK_NOT_BROADCAST,
