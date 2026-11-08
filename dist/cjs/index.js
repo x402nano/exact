@@ -811,7 +811,9 @@ var ExactNanoScheme3 = class {
           return constructVerifyInvalidResponse_(ERROR_NANO_RPC);
         }
         if (getBlockInfoResponse.contents) {
-          if (getBlockInfoResponse.amount !== payload.accepted.amount || getBlockInfoResponse.subtype !== "send") {
+          if (getBlockInfoResponse.subtype !== "send") {
+            return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
+          } else if (getBlockInfoResponse.amount !== payload.accepted.amount) {
             return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
           } else if (getBlockInfoResponse.confirmed === "true") {
             return constructVerifyInvalidResponse_(ERROR_BLOCK_ALREADY_CONFIRMED);

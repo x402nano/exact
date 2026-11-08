@@ -532,11 +532,9 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
 
         // If block found
         if (getBlockInfoResponse.contents) {
-          // Make sure the block found is a send block that matches the amount in payment requirements
-          if (
-            getBlockInfoResponse.amount !== payload.accepted.amount ||
-            getBlockInfoResponse.subtype !== "send"
-          ) {
+          if (getBlockInfoResponse.subtype !== "send") {
+            return constructVerifyInvalidResponse_(ERROR_INVALID_BLOCK);
+          } else if (getBlockInfoResponse.amount !== payload.accepted.amount) {
             return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
           } else if (getBlockInfoResponse.confirmed === "true") {
             return constructVerifyInvalidResponse_(ERROR_BLOCK_ALREADY_CONFIRMED);
