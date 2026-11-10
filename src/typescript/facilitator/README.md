@@ -86,6 +86,8 @@ facilitator.register("nano:mainnet", exactNanoFacilitatorScheme);
 
 ---
 
+### Deprecation Notice
+
 > ⚠️ Note for users of the deprecated `@x402nano/helper` package - provide the older style configuration object to `fromHelperConfig` when using `createFacilitatorNanoSigner`. This will convert into the newer configuration object shape before creating the Signer class.
 
 ```js

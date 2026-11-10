@@ -88,7 +88,7 @@ const client = new x402Client();
 client.register("nano:mainnet", exactNanoClientScheme);
 ```
 
-Configure **`Client`** to only create Nano payments on your chosen Nnao network e.g. `nano:mainnet`.
+Configure **`Client`** to only create Nano payments on your chosen Nano network e.g. `nano:mainnet`.
 ```js
 client.setSpendControls({
   allowedAssets: [{ network: "nano:mainnet", asset: "XNO" }],
@@ -96,6 +96,8 @@ client.setSpendControls({
 ```
 
 ---
+
+### Deprecation Notice
 
 > ⚠️ Note for users of the deprecated `@x402nano/helper` package - provide the older style configuration object to `fromHelperConfig`. This will convert into the newer configuration object shape before creating the Signer class.
 
