@@ -230,7 +230,9 @@ export function validateNanoAccountPrivateKey(
  */
 export function validateCustomWorkGenerator(workGenerator: WorkGenerator) {
   if (!WORK_GENERATOR.safeParse(workGenerator).success) {
-    throw new Error(`${ERROR_NANO_WORK_GENERATION} - Custom work generator is not valid`);
+    throw new Error(
+      `${ERROR_NANO_WORK_GENERATION} - Custom work generation function is not valid.`,
+    );
   }
 
   return true;
