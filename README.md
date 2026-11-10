@@ -73,7 +73,7 @@ npm run test
 
 ### **TypeScript**
 
-To run an integration test which performs a live Nano transaction:
+To run an integration test which performs a live Nano transactions:
 
 1. **Copy `.env.example` to `.env`**
 
@@ -86,8 +86,14 @@ To run an integration test which performs a live Nano transaction:
    # Nano RPC endpoint
    NANO_RPC_URL=https://nano-rpc-provider.com/rpc
 
-   # Optional – dedicated work server (defaults to NANO_RPC_URL value)
+   # Optional: API key for Nano RPC endpoint
+   NANO_RPC_API_KEY=LPb5P...CWiqw
+
+   # Dedicated work generation endpoint
    NANO_WORK_GENERATION_URL=https://work-server.example.com/rpc
+
+   # Optional: API key for work generation endpoint
+   NANO_WORK_GENERATION_API_KEY=tG0nH...asRgk
 
    # Where payments should be sent (your receiving Nano account)
    PAYMENT_REQUIREMENT_PAY_TO=nano_1abc...123
@@ -101,7 +107,7 @@ To run an integration test which performs a live Nano transaction:
    RESOURCE_SERVER_PORT=3121
    FACILITATOR_PORT=3122
 
-   # Nano network to use (leave blank or omit altogether to default to "nano:mainnet")
+   # Optional: Nano network to use (leave blank or omit altogether to default to "nano:mainnet")
    NANO_NETWORK=nano:mainnet
    ```
 
@@ -114,7 +120,7 @@ npm run test:integration
 
 ## Security Notes 🚨
 
-This is new software and hasn't yet been deployed heavily in production environments yet. Please test with small amounts of Nano only! The authors and contributors shall not be held liable for any use of this software's functionality, intentional or unintentional, that leads to an undesired lose of funds.
+This is new software and hasn't yet been deployed heavily in production environments yet. Please test with small amounts of Nano only. The authors and contributors shall not be held liable for any use of this software's functionality, intentional or unintentional, that leads to an undesired lose of funds.
 
 ## Contributing
 
