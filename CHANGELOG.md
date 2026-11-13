@@ -17,12 +17,12 @@
 
 ### 🗨️ **Other Changes**
 - Settlement by **`Facilitator`** has been strengthened. Now waits for send blocks to be confirmed rather than just broadcast to the network.
-- Verification of payment payloads by **`Facilitator`** has become stricter. More granular error codes returned to match the [Nano exact scheme](https://github.com/x402nano/schemes/blob/main/exact.md).
+- Verification of payment payloads by **`Facilitator`** has become stricter. Also more granular error codes are returned to match the [Nano exact scheme](https://github.com/x402nano/schemes/blob/main/exact.md).
 - Set an API key (Bearer token) for Nano RPC endpoint and Work Generation endpoint via `Signer` config fields `rpcApiKey` and `workGenerationApiKey` respectively.
 - `fromHelperConfig` utility function added to convert deprecated `Helper`config to new `Signer` config shape for [Client](https://github.com/x402nano/exact/blob/main/src/typescript/client/#deprecation-notice) and [Facilitator](https://github.com/x402nano/exact/blob/main/src/typescript/facilitator/#deprecation-notice).
 - More unit testing added for better code coverage.
 - Integration test added to test live transactions on the Nano network.
-- READMEs added for each component - [Client](https://github.com/x402nano/exact/blob/main/src/typescript/client/), [Resource Server](https://github.com/x402nano/exact/blob/main/src/typescript/server/), and [Facilitator](https://github.com/x402nano/exact/blob/main/src/typescript/facilitator/).
+- Documentation added for each component - [Client](https://github.com/x402nano/exact/blob/main/src/typescript/client/), [Resource Server](https://github.com/x402nano/exact/blob/main/src/typescript/server/), and [Facilitator](https://github.com/x402nano/exact/blob/main/src/typescript/facilitator/).
 - Package updates for `zod`, `nano-sdk` and `bignumber.js`.
 
 ### ✍️ **Notes**

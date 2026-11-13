@@ -4,7 +4,7 @@
 [![x402](https://img.shields.io/badge/protocol-x402-0066ff?style=flat-square)](https://www.x402.org)
 [![Nano](https://img.shields.io/badge/crypto-Nano-4fc0d0?style=flat-square&logo=nano)](https://nano.org)
 
-This repository contains **minimal, runnable examples** showing how to implement fixed-amount Nano (XNO) payments of any size over [x402 protocol](https://x402.org/) via the `exact` scheme.
+This directory contains **minimal, runnable examples** showing how to implement fixed-amount Nano (XNO) payments of any size over [x402 protocol](https://x402.org/) via the `exact` scheme.
 
 The **x402 protocol** (reviving HTTP **402 Payment Required**) enables simple, programmatic micropayments — perfect for APIs, content, AI inference, or any pay-per-use resource without subscriptions or API keys.
 
@@ -12,7 +12,7 @@ The **x402 protocol** (reviving HTTP **402 Payment Required**) enables simple, p
 
 The examples consists of three independent components:
 
-| Service               | Role                              | Main file                 | Description                                                             |
+| Service               | Role                              | File                 | Description                                                             |
 | --------------------- | --------------------------------- | ------------------------- | ----------------------------------------------------------------------- |
 | **`Client`**          | Pays for resource                 | `example-client.mjs`      | Requests resource → creates Nano payment → retries request with payment |
 | **`Resource Server`** | Paywalls content / API            | `example-server.mjs`      | Returns 402 → verifies & settles → delivers content                     |

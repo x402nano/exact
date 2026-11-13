@@ -29,7 +29,7 @@ The configuration object to pass into `createFacilitatorNanoSigner` has the foll
   rpcUrl: "https://...", // REQUIRED - URL of Nano node RPC endpoint
   rpcApiKey: "LPb5P...CWiqw", // OPTIONAL - Bearer authentication token if needed for access to Nano node RPC URL
   workGenerationUrl: "https://...", // OPTIONAL - URL of work generation endpoint 
-  workGenerationApiKey: "tG0nH...asRgk" // OPTIONAL - Bearer authentication token if needed for access to work generation URL
+  workGenerationApiKey: "tG0nH...asRgk", // OPTIONAL - Bearer authentication token if needed for access to work generation URL
   workGenerator: function (block, network) {/* ...generate work here... */} // OPTIONAL - Custom work generation function
 }
 ```
@@ -88,10 +88,10 @@ facilitator.register("nano:mainnet", exactNanoFacilitatorScheme);
 
 ### Deprecation Notice
 
-> ⚠️ Note for users of the deprecated `@x402nano/helper` package - provide the older style configuration object to `fromHelperConfig` when using `createFacilitatorNanoSigner`. This will convert into the newer configuration object shape before creating the Signer class.
+> ⚠️ Note for users of the deprecated `@x402nano/helper` package. Provide your existing (now deprecated) `Helper` configuration object to the `fromHelperConfig` conversion function. This will convert it into the `Signer` configuration object shape before creating the `Signer` class instance.
 
 ```js
-import { ExactNanoFacilitatorScheme, createFacilitatorNanoSigner, fromHelperConfig /* <- import needed */ } from "@x402nano/exact";
+import { ExactNanoFacilitatorScheme, createFacilitatorNanoSigner, fromHelperConfig } from "@x402nano/exact";
 
 const signer = new createFacilitatorNanoSigner(fromHelperConfig({
   NANO_ACCOUNT_PRIVATE_KEY: process.env.CLIENT_NANO_ACCOUNT_PRIVATE_KEY,
