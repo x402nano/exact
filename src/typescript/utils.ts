@@ -18,7 +18,8 @@ import {
   ERROR_PRICE,
   ERROR_CONFIG,
   ERROR_NANO_WORK_GENERATION,
-  ERROR_TEXT_RPCURL_NOT_FOUND,
+  ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
+  ERROR_CONFIG_INVALID_RPC_URL,
 } from "./constants";
 
 /**
@@ -162,11 +163,11 @@ export function convertNanoToRaw(amount: NanoAmountString): RawAmountString {
 export function validateNanoRpcUrl(rpcUrl: string, bypassNullCheck: boolean = false) {
   if (!bypassNullCheck) {
     if (!rpcUrl) {
-      throw new Error(`${ERROR_CONFIG} - Configuration missing: 'rpcUrl'`);
+      throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
     }
 
     if (!URL.safeParse(rpcUrl).success) {
-      throw new Error(ERROR_TEXT_RPCURL_NOT_FOUND);
+      throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
     }
   }
 

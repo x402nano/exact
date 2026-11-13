@@ -46,7 +46,8 @@ import {
   ERROR_BLOCK_GENERATION,
   ERROR_NANO_WORK_GENERATION,
   ERROR_NANO_RPC,
-  ERROR_TEXT_RPCURL_NOT_FOUND,
+  ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
+  ERROR_CONFIG_TEXT_INVALID_CONFIG,
   ONE_SECOND,
 } from "./constants";
 
@@ -194,7 +195,7 @@ async function workGenerateInternal({
  */
 function getAccount({ accountPrivateKey }: GetAccountParams) {
   if (!accountPrivateKey) {
-    throw new Error(`${ERROR_CONFIG} - Private key not supplied in config`);
+    throw new Error(`${ERROR_CONFIG} - Config value "accountPrivateKey" not set`);
   }
 
   return deriveAccountFromPrivateKey({ privateKey: accountPrivateKey });
@@ -287,7 +288,7 @@ class Signer implements SignerClass {
       clientSignerConfigParsed = CLIENT_SIGNER_CONFIG.safeParse(config);
 
       if (!clientSignerConfigParsed.success) {
-        throw new Error(`${ERROR_CONFIG} - Invalid config passed to Signer`);
+        throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_INVALID_CONFIG}`);
       }
 
       this.config = clientSignerConfigParsed.data;
@@ -303,7 +304,7 @@ class Signer implements SignerClass {
       resourceServerSignerConfigParsed = RESOURCE_SERVER_SIGNER_CONFIG.safeParse(config);
 
       if (!resourceServerSignerConfigParsed.success) {
-        throw new Error(`${ERROR_CONFIG} - Invalid config passed to Signer`);
+        throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_INVALID_CONFIG}`);
       }
 
       this.config = resourceServerSignerConfigParsed.data;
@@ -316,7 +317,7 @@ class Signer implements SignerClass {
       facilitatorSignerConfigParsed = FACILITATOR_SIGNER_CONFIG.safeParse(config);
 
       if (!facilitatorSignerConfigParsed.success) {
-        throw new Error(`${ERROR_CONFIG} - Invalid config passed to Signer`);
+        throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_INVALID_CONFIG}`);
       }
 
       this.config = facilitatorSignerConfigParsed.data;
@@ -351,7 +352,7 @@ class Signer implements SignerClass {
       })) as AccountInfoSuccess;
     }
 
-    return Promise.reject(ERROR_TEXT_RPCURL_NOT_FOUND);
+    return Promise.reject(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
   }
 
   /**
@@ -379,7 +380,7 @@ class Signer implements SignerClass {
       })) as BlockInfoSuccess;
     }
 
-    return Promise.reject(ERROR_TEXT_RPCURL_NOT_FOUND);
+    return Promise.reject(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
   }
 
   /**
@@ -495,7 +496,7 @@ class Signer implements SignerClass {
       })) as ProcessBlockSuccess;
     }
 
-    return Promise.reject(ERROR_TEXT_RPCURL_NOT_FOUND);
+    return Promise.reject(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
   }
 
   /**

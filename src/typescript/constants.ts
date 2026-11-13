@@ -76,7 +76,10 @@ export const ERROR_BLOCK_NOT_BROADCAST: string = "error_block_not_broadcast";
 export const ERROR_WORK_UNAVAILABLE: string = "error_work_unavailable";
 export const ERROR_FACILITATOR: string = "error_facilitator";
 
-export const ERROR_TEXT_RPCURL_NOT_FOUND = `${ERROR_CONFIG} - 'rpcUrl' not specified`;
+export const ERROR_CONFIG_INVALID_RPC_URL = `error_config_invalid_rpc_url`;
+
+export const ERROR_CONFIG_TEXT_RPC_URL_NOT_SET = `Config value "rpcUrl" not set`;
+export const ERROR_CONFIG_TEXT_INVALID_CONFIG = `Invalid config passed to Signer`;
 
 export const DEPRECATION_NOTICE = "DEPRECATION";
 
