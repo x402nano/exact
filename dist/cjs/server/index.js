@@ -42,10 +42,8 @@ var import_types2 = require("nano-sdk/types");
 var import_blocks = require("nano-sdk/blocks");
 
 // src/typescript/constants.ts
-var ERROR_CONFIG = "error_config";
 var ERROR_PRICE = "error_price";
 var ERROR_RAW_AMOUNT = "error_raw_amount";
-var ERROR_TEXT_RPCURL_NOT_FOUND = `${ERROR_CONFIG} - 'rpcUrl' not specified`;
 var CURRENCY_CODE_XNO = "XNO";
 
 // src/typescript/utils.ts

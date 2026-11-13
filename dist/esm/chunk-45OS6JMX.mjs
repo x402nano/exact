@@ -30,7 +30,7 @@ import {
   SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   ensureNanoPrefix
-} from "./chunk-XRFT33LD.mjs";
+} from "./chunk-ENXE72SS.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -427,4 +427,4 @@ var ExactNanoScheme = class {
 export {
   ExactNanoScheme
 };
-//# sourceMappingURL=chunk-L6S37U3C.mjs.map
+//# sourceMappingURL=chunk-45OS6JMX.mjs.map

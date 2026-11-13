@@ -44,6 +44,9 @@ __export(typescript_exports, {
   ERROR_BLOCK_GENERATION: () => ERROR_BLOCK_GENERATION,
   ERROR_BLOCK_NOT_BROADCAST: () => ERROR_BLOCK_NOT_BROADCAST,
   ERROR_CONFIG: () => ERROR_CONFIG,
+  ERROR_CONFIG_INVALID_RPC_URL: () => ERROR_CONFIG_INVALID_RPC_URL,
+  ERROR_CONFIG_TEXT_INVALID_CONFIG: () => ERROR_CONFIG_TEXT_INVALID_CONFIG,
+  ERROR_CONFIG_TEXT_RPC_URL_NOT_SET: () => ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
   ERROR_FACILITATOR: () => ERROR_FACILITATOR,
   ERROR_FRONTIER_NOT_CONFIRMED: () => ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_INVALID_ASSET: () => ERROR_INVALID_ASSET,
@@ -59,7 +62,6 @@ __export(typescript_exports, {
   ERROR_PRICE: () => ERROR_PRICE,
   ERROR_RAW_AMOUNT: () => ERROR_RAW_AMOUNT,
   ERROR_SIGNER: () => ERROR_SIGNER,
-  ERROR_TEXT_RPCURL_NOT_FOUND: () => ERROR_TEXT_RPCURL_NOT_FOUND,
   ERROR_TIMEOUT_EXPIRED: () => ERROR_TIMEOUT_EXPIRED,
   ERROR_UNSUPPORTED_NETWORK: () => ERROR_UNSUPPORTED_NETWORK,
   ERROR_UNSUPPORTED_SCHEME: () => ERROR_UNSUPPORTED_SCHEME,
@@ -200,7 +202,9 @@ var ERROR_BLOCK_AWAITING_CONFIRMATION = "error_block_awaiting_confirmation";
 var ERROR_BLOCK_NOT_BROADCAST = "error_block_not_broadcast";
 var ERROR_WORK_UNAVAILABLE = "error_work_unavailable";
 var ERROR_FACILITATOR = "error_facilitator";
-var ERROR_TEXT_RPCURL_NOT_FOUND = `${ERROR_CONFIG} - 'rpcUrl' not specified`;
+var ERROR_CONFIG_INVALID_RPC_URL = `error_config_invalid_rpc_url`;
+var ERROR_CONFIG_TEXT_RPC_URL_NOT_SET = `Config value "rpcUrl" not set`;
+var ERROR_CONFIG_TEXT_INVALID_CONFIG = `Invalid config passed to Signer`;
 var DEPRECATION_NOTICE = "DEPRECATION";
 var CURRENCY_CODE_XNO = "XNO";
 var NANO_PREFIX = "nano_";
@@ -271,10 +275,10 @@ function convertNanoToRaw(amount) {
 function validateNanoRpcUrl(rpcUrl, bypassNullCheck = false) {
   if (!bypassNullCheck) {
     if (!rpcUrl) {
-      throw new Error(`${ERROR_CONFIG} - Configuration missing: 'rpcUrl'`);
+      throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
     }
     if (!URL.safeParse(rpcUrl).success) {
-      throw new Error(ERROR_TEXT_RPCURL_NOT_FOUND);
+      throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
     }
   }
   return true;
@@ -302,7 +306,9 @@ function validateNanoAccountPrivateKey(accountPrivateKey, bypassNullCheck = fals
 }
 function validateCustomWorkGenerator(workGenerator) {
   if (!WORK_GENERATOR.safeParse(workGenerator).success) {
-    throw new Error(`${ERROR_NANO_WORK_GENERATION} - Custom work generator is not valid`);
+    throw new Error(
+      `${ERROR_NANO_WORK_GENERATION} - Custom work generation function is not valid.`
+    );
   }
   return true;
 }
@@ -980,7 +986,7 @@ async function workGenerateInternal({
 }
 function getAccount({ accountPrivateKey }) {
   if (!accountPrivateKey) {
-    throw new Error(`${ERROR_CONFIG} - Private key not supplied in config`);
+    throw new Error(`${ERROR_CONFIG} - Config value "accountPrivateKey" not set`);
   }
   return (0, import_crypto3.deriveAccountFromPrivateKey)({ privateKey: accountPrivateKey });
 }
@@ -1031,7 +1037,7 @@ var Signer = class {
       let clientSignerConfigParsed;
       clientSignerConfigParsed = CLIENT_SIGNER_CONFIG.safeParse(config);
       if (!clientSignerConfigParsed.success) {
-        throw new Error(`${ERROR_CONFIG} - Invalid config passed to Signer`);
+        throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_INVALID_CONFIG}`);
       }
       this.config = clientSignerConfigParsed.data;
       if ("accountPrivateKey" in this.config) {
@@ -1043,7 +1049,7 @@ var Signer = class {
       let resourceServerSignerConfigParsed;
       resourceServerSignerConfigParsed = RESOURCE_SERVER_SIGNER_CONFIG.safeParse(config);
       if (!resourceServerSignerConfigParsed.success) {
-        throw new Error(`${ERROR_CONFIG} - Invalid config passed to Signer`);
+        throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_INVALID_CONFIG}`);
       }
       this.config = resourceServerSignerConfigParsed.data;
       return;
@@ -1052,7 +1058,7 @@ var Signer = class {
       let facilitatorSignerConfigParsed;
       facilitatorSignerConfigParsed = FACILITATOR_SIGNER_CONFIG.safeParse(config);
       if (!facilitatorSignerConfigParsed.success) {
-        throw new Error(`${ERROR_CONFIG} - Invalid config passed to Signer`);
+        throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_INVALID_CONFIG}`);
       }
       this.config = facilitatorSignerConfigParsed.data;
       return;
@@ -1080,7 +1086,7 @@ var Signer = class {
         }
       });
     }
-    return Promise.reject(ERROR_TEXT_RPCURL_NOT_FOUND);
+    return Promise.reject(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
   }
   /**
    * Retrieves block information from the Nano node.
@@ -1103,7 +1109,7 @@ var Signer = class {
         }
       });
     }
-    return Promise.reject(ERROR_TEXT_RPCURL_NOT_FOUND);
+    return Promise.reject(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
   }
   /**
    * Generates a signed Nano send block for a payment transaction.
@@ -1196,7 +1202,7 @@ var Signer = class {
         }
       });
     }
-    return Promise.reject(ERROR_TEXT_RPCURL_NOT_FOUND);
+    return Promise.reject(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
   }
   /**
    * Sets a custom work generator.
@@ -1259,6 +1265,9 @@ var priceNanoUnits2 = priceNanoUnits;
   ERROR_BLOCK_GENERATION,
   ERROR_BLOCK_NOT_BROADCAST,
   ERROR_CONFIG,
+  ERROR_CONFIG_INVALID_RPC_URL,
+  ERROR_CONFIG_TEXT_INVALID_CONFIG,
+  ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
   ERROR_FACILITATOR,
   ERROR_FRONTIER_NOT_CONFIRMED,
   ERROR_INVALID_ASSET,
@@ -1274,7 +1283,6 @@ var priceNanoUnits2 = priceNanoUnits;
   ERROR_PRICE,
   ERROR_RAW_AMOUNT,
   ERROR_SIGNER,
-  ERROR_TEXT_RPCURL_NOT_FOUND,
   ERROR_TIMEOUT_EXPIRED,
   ERROR_UNSUPPORTED_NETWORK,
   ERROR_UNSUPPORTED_SCHEME,

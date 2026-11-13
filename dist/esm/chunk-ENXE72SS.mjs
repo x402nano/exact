@@ -39,7 +39,9 @@ var ERROR_BLOCK_AWAITING_CONFIRMATION = "error_block_awaiting_confirmation";
 var ERROR_BLOCK_NOT_BROADCAST = "error_block_not_broadcast";
 var ERROR_WORK_UNAVAILABLE = "error_work_unavailable";
 var ERROR_FACILITATOR = "error_facilitator";
-var ERROR_TEXT_RPCURL_NOT_FOUND = `${ERROR_CONFIG} - 'rpcUrl' not specified`;
+var ERROR_CONFIG_INVALID_RPC_URL = `error_config_invalid_rpc_url`;
+var ERROR_CONFIG_TEXT_RPC_URL_NOT_SET = `Config value "rpcUrl" not set`;
+var ERROR_CONFIG_TEXT_INVALID_CONFIG = `Invalid config passed to Signer`;
 var DEPRECATION_NOTICE = "DEPRECATION";
 var CURRENCY_CODE_XNO = "XNO";
 var NANO_PREFIX = "nano_";
@@ -227,10 +229,10 @@ function convertNanoToRaw(amount) {
 function validateNanoRpcUrl(rpcUrl, bypassNullCheck = false) {
   if (!bypassNullCheck) {
     if (!rpcUrl) {
-      throw new Error(`${ERROR_CONFIG} - Configuration missing: 'rpcUrl'`);
+      throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
     }
     if (!URL.safeParse(rpcUrl).success) {
-      throw new Error(ERROR_TEXT_RPCURL_NOT_FOUND);
+      throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
     }
   }
   return true;
@@ -258,7 +260,9 @@ function validateNanoAccountPrivateKey(accountPrivateKey, bypassNullCheck = fals
 }
 function validateCustomWorkGenerator(workGenerator) {
   if (!WORK_GENERATOR.safeParse(workGenerator).success) {
-    throw new Error(`${ERROR_NANO_WORK_GENERATION} - Custom work generator is not valid`);
+    throw new Error(
+      `${ERROR_NANO_WORK_GENERATION} - Custom work generation function is not valid.`
+    );
   }
   return true;
 }
@@ -315,7 +319,9 @@ export {
   ERROR_BLOCK_NOT_BROADCAST,
   ERROR_WORK_UNAVAILABLE,
   ERROR_FACILITATOR,
-  ERROR_TEXT_RPCURL_NOT_FOUND,
+  ERROR_CONFIG_INVALID_RPC_URL,
+  ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
+  ERROR_CONFIG_TEXT_INVALID_CONFIG,
   DEPRECATION_NOTICE,
   CURRENCY_CODE_XNO,
   NANO_PREFIX,
@@ -340,4 +346,4 @@ export {
   FACILITATOR_SIGNER_CONFIG,
   ASSET_AMOUNT
 };
-//# sourceMappingURL=chunk-XRFT33LD.mjs.map
+//# sourceMappingURL=chunk-ENXE72SS.mjs.map
