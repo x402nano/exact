@@ -194,13 +194,13 @@ describe("Nano exact live settlement [Client generates work]", () => {
 
     expect(settle.success).toBe(true);
     expect(settle.transaction).toBeTruthy();
-  }, 60_000);
+  }, 120_000);
 
   it("should return correct confirmation hash on settlement replay", async () => {
     expect(await server.settlePayment(paymentPayload, accepted))
       .toHaveProperty("errorReason", ERROR_BLOCK_ALREADY_CONFIRMED)
       .toHaveProperty("transaction", settle.transaction);
-  }, 60_000);
+  }, 120_000);
 });
 
 // ---------------------------------------------------
@@ -258,13 +258,13 @@ describe("Nano exact live settlement [Facilitator generates work]", () => {
 
     expect(settle.success).toBe(true);
     expect(settle.transaction).toBeTruthy();
-  }, 60_000);
+  }, 120_000);
 
   it("should return correct confirmation hash on settlement replay", async () => {
     expect(await server.settlePayment(paymentPayload, accepted))
       .toHaveProperty("errorReason", ERROR_BLOCK_ALREADY_CONFIRMED)
       .toHaveProperty("transaction", settle.transaction);
-  }, 60_000);
+  }, 120_000);
 });
 
 // ---------------------------------------------------
@@ -343,13 +343,13 @@ describe('Nano exact live settlement [Client custom "workGenerator" function gen
 
     expect(settle.success).toBe(true);
     expect(settle.transaction).toBeTruthy();
-  }, 60_000);
+  }, 120_000);
 
   it("should return correct confirmation hash on settlement replay", async () => {
     expect(await server.settlePayment(paymentPayload, accepted))
       .toHaveProperty("errorReason", ERROR_BLOCK_ALREADY_CONFIRMED)
       .toHaveProperty("transaction", settle.transaction);
-  }, 60_000);
+  }, 120_000);
 });
 
 // ---------------------------------------------------
@@ -417,11 +417,11 @@ describe("Nano exact live settlement [fromHelperConfig used]", () => {
 
     expect(settle.success).toBe(true);
     expect(settle.transaction).toBeTruthy();
-  }, 60_000);
+  }, 120_000);
 
   it("should return correct confirmation hash on settlement replay", async () => {
     expect(await server.settlePayment(paymentPayload, accepted))
       .toHaveProperty("errorReason", ERROR_BLOCK_ALREADY_CONFIRMED)
       .toHaveProperty("transaction", settle.transaction);
-  }, 60_000);
+  }, 120_000);
 });
