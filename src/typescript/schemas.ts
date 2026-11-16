@@ -130,7 +130,7 @@ export const FACILITATOR_SIGNER_CONFIG = z
 export const HELPER_CONFIG_DEPRECATED = z.object({
   NANO_RPC_URL: URL.optional(),
   NANO_WORK_GENERATION_URL: URL.optional(),
-  NANO_ACCOUNT_PRIVATE_KEY: HashString().optional(),
+  NANO_ACCOUNT_PRIVATE_KEY: PrivateKeyString().optional(),
 });
 
 /**
@@ -171,7 +171,7 @@ export const ASSET_AMOUNT = z
   .object({
     asset: z.literal(CURRENCY_CODE_XNO),
     amount: RawAmountString(),
-    extra: z.object().optional(),
+    extra: z.object({}).optional(),
   })
   .strict()
   .refine(
