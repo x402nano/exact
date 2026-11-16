@@ -22,13 +22,13 @@ export const NANO_WILDCARD_CAIP2 = "nano:*";
 
 /**
  * Proof-of-Work difficulty threshold required for valid send blocks on Nano Mainnet.
- * This values ensures send blocks meet the minimum difficulty requirements on mainnet.
+ * This value ensures send blocks meet the minimum difficulty requirements on mainnet.
  */
 export const SEND_BLOCK_WORK_THRESHOLD_MAINNET: WorkDifficultyString = "fffffff800000000";
 
 /**
  * Proof-of-Work difficulty threshold required for valid send blocks on Nano Betanet.
- * This values ensures send blocks meet the minimum difficulty requirements on betanet.
+ * This value ensures send blocks meet the minimum difficulty requirements on betanet.
  */
 export const SEND_BLOCK_WORK_THRESHOLD_BETANET: WorkDifficultyString = "fffff00000000000";
 
@@ -81,29 +81,12 @@ export const ERROR_CONFIG_INVALID_RPC_URL = `error_config_invalid_rpc_url`;
 export const ERROR_CONFIG_TEXT_RPC_URL_NOT_SET = `Config value "rpcUrl" not set`;
 export const ERROR_CONFIG_TEXT_INVALID_CONFIG = `Invalid config passed to Signer`;
 
-export const DEPRECATION_NOTICE = "DEPRECATION";
-
 export const CURRENCY_CODE_XNO = "XNO";
-
-/**
- * Current Nano address prefix.
- */
-export const NANO_PREFIX: string = "nano_";
-
-/**
- * Legacy Nano address prefix.
- */
-export const XRB_PREFIX: string = "xrb_";
 
 /**
  * Used by Client to signal that it wants work generated for its send block.
  */
 export const CLIENT_NO_WORK: string = "0000000000000000";
-
-/**
- * Default number of seconds before a transaction attempt is considered timed out.
- */
-export const DEFAULT_MAX_TIMEOUT_SECONDS = 60;
 
 /**
  * One second in milliseconds.

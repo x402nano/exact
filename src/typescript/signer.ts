@@ -1,7 +1,7 @@
 import * as z from "zod";
 import { createSendBlock, StateBlock } from "nano-sdk/blocks";
 import { verifyWork, deriveAccountFromPrivateKey } from "nano-sdk/crypto";
-import { AccountString, WorkDifficultyString } from "nano-sdk/types";
+import { AccountString, WorkString } from "nano-sdk/types";
 import {
   // Types
   GenerateSendBlockParams,
@@ -49,6 +49,7 @@ import {
   ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
   ERROR_CONFIG_TEXT_INVALID_CONFIG,
   ONE_SECOND,
+  CLIENT_NO_WORK,
 } from "./constants";
 
 /**
@@ -63,7 +64,7 @@ const SIGNER_TYPE_FACILITATOR = "SIGNER_TYPE_FACILITATOR";
 /**
  * Makes an RPC call to a Nano node.
  *
- * @param params - The configuration object
+ * @param params - Parameters object
  * @param params.url - The Nano RPC endpoint URL
  * @param params.headers - Header to send with the RPC call e.g. auth headers
  * @param params.action - The Nano RPC action to perform
@@ -122,11 +123,11 @@ async function nanoRpcCall({
 /**
  * Generates Proof-of-Work nonce (work) for a given block.
  *
- * @param params - The configuration object
- * @param params.config - Signer configuration containing RPC URLs
+ * @param params - Parameters object
+ * @param params.config - Signer configuration
  * @param params.block - Block to generate work for
  * @param params.network - Network to generate work for
- * @param params.workGenerator - Work generation function
+ * @param params.workGenerator - Custom work generation function
  * @returns Promise resolving to the generated work
  * @throws Error if work generation fails or generated work is invalid
  */
@@ -140,7 +141,7 @@ async function workGenerateInternal({
 
   if (workGenerator) {
     try {
-      let work: WorkDifficultyString;
+      let work: WorkString;
       work = await workGenerator({ block, network });
       return work;
     } catch (error) {
@@ -189,7 +190,7 @@ async function workGenerateInternal({
 /**
  * Derives the account address from the configured private key.
  *
- * @param params - The configuration object
+ * @param params - Parameters object
  * @param params.accountPrivateKey - Private key for Nano account
  * @returns The derived Nano account address
  */
@@ -262,7 +263,7 @@ class Signer implements SignerClass {
   /**
    * Creates a new Signer instance.
    *
-   * @param params - Constructor parameters
+   * @param params - Parameters object
    * @param params.config - Configuration object for the Signer
    * @param params.signerType - Type of Signer (Client or Facilitator)
    */
@@ -279,7 +280,7 @@ class Signer implements SignerClass {
       signerType !== SIGNER_TYPE_FACILITATOR
     ) {
       throw new Error(
-        `${ERROR_SIGNER} - Use 'createClientNanoSigner', 'createResourceServerNanoSigner', or 'createFacilitatorNanoSigner' to create Nano signer`,
+        `${ERROR_SIGNER} - Use 'createClientNanoSigner' or 'createFacilitatorNanoSigner' to create Nano signer`,
       );
     }
 
@@ -329,7 +330,7 @@ class Signer implements SignerClass {
   /**
    * Retrieves account information from the Nano node.
    *
-   * @param params - The configuration object
+   * @param params - Parameters object
    * @param params.account - The account address to query
    * @returns Promise resolving to account info (frontier, balance, representative, etc.)
    * @throws Error if RPC URL is invalid or request fails
@@ -358,8 +359,8 @@ class Signer implements SignerClass {
   /**
    * Retrieves block information from the Nano node.
    *
-   * @param params - The configuration object
-   * @param params.hash - Hash of the block to retrive information for
+   * @param params - Parameters object
+   * @param params.hash - Hash of the block to retrieve information for
    * @returns Promise resolving to block info
    * @throws Error if RPC URL is invalid or request fails
    */
@@ -386,7 +387,11 @@ class Signer implements SignerClass {
   /**
    * Generates a signed Nano send block for a payment transaction.
    *
-   * @param params - Parameters including amount and destination address (payTo)
+   * @param params - Parameters object
+   * @param params.payTo - Destination Nano account that the send amount is being sent to
+   * @param params.amount - Amount of nano being sent in the send block
+   * @param params.network - The Nano network being used
+   * @param params.skipWorkGeneration - Whether work generation is being skipped
    * @returns Promise resolving to the generated send block
    * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
    */
@@ -428,6 +433,8 @@ class Signer implements SignerClass {
 
     if (!params.skipWorkGeneration) {
       block.work = await this.generateWork({ block, network: params.network });
+    } else {
+      block.work = CLIENT_NO_WORK;
     }
 
     block.account = ensureNanoPrefix(block.account);
@@ -473,7 +480,7 @@ class Signer implements SignerClass {
   /**
    * Submits a block to the Nano network for processing.
    *
-   * @param params - The configuration object
+   * @param params - Parameters object
    * @param params.block - The block to process
    * @returns Promise resolving to the processing result containing transaction hash
    * @throws Error if RPC call fails
@@ -536,7 +543,7 @@ class Signer implements SignerClass {
   }
 
   /**
-   * Returns the current configuration values (without account private key for security purposes).
+   * Returns the current Signer configuration values (without account private key for security purposes).
    *
    * @returns Current configuration values (without account private key)
    */

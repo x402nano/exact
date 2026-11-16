@@ -17,7 +17,7 @@ within the Payment Payload.
 */
 
 import { x402Client, x402HTTPClient } from "@x402/core/client"
-import { ExactNanoClientScheme as ExactNanoScheme, createClientNanoSigner, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
+import { ExactNanoClientScheme, createClientNanoSigner, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
 
 const NANO_NETWORK = process.env.NANO_NETWORK || NANO_MAINNET_CAIP2
 
@@ -43,7 +43,7 @@ async function main() {
     workGenerationApiKey: process.env.NANO_WORK_GENERATION_API_KEY,
   });
 
-  /* const signer = new createClientNanoSigner(fromHelperConfig({
+  /* const signer = createClientNanoSigner(fromHelperConfig({
     NANO_ACCOUNT_PRIVATE_KEY: process.env.CLIENT_NANO_ACCOUNT_PRIVATE_KEY,
     NANO_RPC_URL: process.env.NANO_RPC_URL,  
     NANO_WORK_GENERATION_URL: process.env.NANO_WORK_GENERATION_URL
@@ -56,11 +56,11 @@ async function main() {
 
   // Create instance of the implementation of the x402 Nano "exact" payment scheme for x402 Client.
   // Pass in Signer instance just created.
-  const exactNanoScheme = new ExactNanoScheme(signer)
+  const exactNanoClientScheme = new ExactNanoClientScheme(signer)
   
   // Register the Nano network that the x402 Client can create Payment Payloads for.
   // Also pass the scheme instance just created.
-  client.register(NANO_NETWORK, exactNanoScheme)
+  client.register(NANO_NETWORK, exactNanoClientScheme)
 
   // Configure client to only create Nano payments
   client.setSpendControls({

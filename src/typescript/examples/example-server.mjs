@@ -15,7 +15,7 @@ confirmation hash back to the Client.
 
 import express from "express"
 import { x402ResourceServer, HTTPFacilitatorClient } from "@x402/core/server"
-import { ExactNanoServerScheme as ExactNanoScheme, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
+import { ExactNanoServerScheme, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
 
 const NANO_NETWORK = process.env.NANO_NETWORK || NANO_MAINNET_CAIP2
 
@@ -58,9 +58,9 @@ const endpointConfigs = {
 const facilitator = new HTTPFacilitatorClient({ url: `http://localhost:${process.env.FACILITATOR_PORT}` })
 const resourceServer = new x402ResourceServer(facilitator)
 
-const exactNanoSchema = new ExactNanoScheme()
+const exactNanoServerScheme = new ExactNanoServerScheme()
 
-resourceServer.register(NANO_NETWORK, exactNanoSchema)
+resourceServer.register(NANO_NETWORK, exactNanoServerScheme)
 
 // Optional: add logging / hooks for verification and settlement of payment payloads
 resourceServer

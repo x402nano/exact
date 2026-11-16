@@ -18,7 +18,7 @@ A Facilitator exposes three endpoints:
 */
 
 import { x402Facilitator } from '@x402/core/facilitator'
-import { ExactNanoFacilitatorScheme as ExactNanoScheme, createFacilitatorNanoSigner, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
+import { ExactNanoFacilitatorScheme, createFacilitatorNanoSigner, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
 import express from 'express'
 
 // Nano RPC is required for the Facilitator to function
@@ -38,7 +38,7 @@ const facilitator = new x402Facilitator()
 // Create Signer that will help with Nano RPC communication.
 // Pass in configuration object with the URL of the Nano RPC to use for Nano network communication,
 // and API key for Nano RPC if applicable.
-const signer = new createFacilitatorNanoSigner({
+const signer = createFacilitatorNanoSigner({
   rpcUrl: process.env.NANO_RPC_URL,
   rpcApiKey: process.env.NANO_RPC_API_KEY,
   workGenerationUrl: process.env.NANO_WORK_GENERATION_URL,
@@ -51,11 +51,11 @@ signer
 
 // Create instance of the implementation of the x402 Nano "exact" payment scheme for x402 Facilitator.
 // Pass in Signer just created.
-const exactNanoScheme = new ExactNanoScheme(signer)
+const exactNanoFacilitatorScheme = new ExactNanoFacilitatorScheme(signer)
 
 // Register the Nano network that the x402 Facilitator verifies and settles transactions for.
 // Also pass the scheme instance just created.
-facilitator.register(process.env.NANO_NETWORK || NANO_MAINNET_CAIP2, exactNanoScheme)
+facilitator.register(process.env.NANO_NETWORK || NANO_MAINNET_CAIP2, exactNanoFacilitatorScheme)
 
 // Optional: hooks to log verify/settle attempts.
 facilitator

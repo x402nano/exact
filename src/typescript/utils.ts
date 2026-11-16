@@ -1,4 +1,4 @@
-import { AssetAmount, Price } from "@x402/core/types";
+import { AssetAmount } from "@x402/core/types";
 import BigNumber from "bignumber.js";
 import { nanoToRaw } from "nano-sdk/math";
 import { deriveAccountFromPrivateKey as deriveAccountFromPrivateKey_ } from "nano-sdk/crypto";
@@ -12,8 +12,6 @@ import {
 } from "./types";
 import { STRING_DECIMAL, URL, WORK_GENERATOR } from "./schemas";
 import {
-  XRB_PREFIX,
-  NANO_PREFIX,
   CURRENCY_CODE_XNO,
   ERROR_PRICE,
   ERROR_CONFIG,
@@ -21,6 +19,16 @@ import {
   ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
   ERROR_CONFIG_INVALID_RPC_URL,
 } from "./constants";
+
+/**
+ * Legacy Nano address prefix.
+ */
+export const XRB_PREFIX: string = "xrb_";
+
+/**
+ * Current Nano address prefix.
+ */
+export const NANO_PREFIX: string = "nano_";
 
 /**
  * Ensure that a Nano account has a "nano_" prefix, not the legacy "xrb_" prefix
@@ -64,7 +72,7 @@ export function priceNanoUnits(
  * @returns AssetAmount object
  */
 export function priceRawUnits(
-  amount: RawAmountString | Price,
+  amount: RawAmountString,
   extra: Record<string, unknown> | undefined = {},
 ): AssetAmount {
   const stringAmount: string = parseAmountToString(amount);
@@ -156,19 +164,16 @@ export function convertNanoToRaw(amount: NanoAmountString): RawAmountString {
  * Validates a Nano RPC URL.
  *
  * @param rpcUrl - Nano RPC Url
- * @param bypassNullCheck - Whether to skip null/undefined check
  * @returns True if Nano RPC URL is validated
- * @throws Error if URL is invalid or empty (unless bypassNullCheck is true)
+ * @throws Error if URL is invalid or empty
  */
-export function validateNanoRpcUrl(rpcUrl: string, bypassNullCheck: boolean = false) {
-  if (!bypassNullCheck) {
-    if (!rpcUrl) {
-      throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
-    }
+export function validateNanoRpcUrl(rpcUrl: string) {
+  if (!rpcUrl) {
+    throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
+  }
 
-    if (!URL.safeParse(rpcUrl).success) {
-      throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
-    }
+  if (!URL.safeParse(rpcUrl).success) {
+    throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
   }
 
   return true;
@@ -178,18 +183,16 @@ export function validateNanoRpcUrl(rpcUrl: string, bypassNullCheck: boolean = fa
  * Validates a Nano work generation URL. Checks URL format only, does not generate any work.
  *
  * @param workGenerationUrl - Work generation URL
- * @param bypassNullCheck - Whether to skip null/undefined check
  * @returns True if Nano work generation URL is validated
- * @throws Error if URL is invalid or empty (unless bypassNullCheck is true)
+ * @throws Error if URL is invalid or empty
  */
-export function validateNanoWorkGenerationUrl(
-  workGenerationUrl: string | undefined,
-  bypassNullCheck: boolean = false,
-) {
-  if (!bypassNullCheck) {
-    if (!URL.safeParse(workGenerationUrl).success) {
-      throw new Error(`${ERROR_CONFIG} - 'workGenerationUrl' is not a valid URL`);
-    }
+export function validateNanoWorkGenerationUrl(workGenerationUrl: string | undefined) {
+  if (!workGenerationUrl) {
+    throw new Error(`${ERROR_CONFIG} - Config value "workGenerationUrl" not set`);
+  }
+
+  if (!URL.safeParse(workGenerationUrl).success) {
+    throw new Error(`${ERROR_CONFIG} - Config value 'workGenerationUrl' is not a valid URL`);
   }
 
   return true;

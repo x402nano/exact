@@ -135,7 +135,7 @@ export const MOCK_SIGNER = {
   setCustomWorkGenerator: vi.fn().mockResolvedValue(""),
   onBeforeWorkGeneration: vi.fn().mockResolvedValue(undefined),
   onAfterWorkGeneration: vi.fn().mockResolvedValue(undefined),
-  getConfig: vi.fn().mockResolvedValue(undefined),
+  getConfig: vi.fn().mockReturnValue({}),
 };
 
 export const MOCK_SIGNER_BLOCK_FRONTIER_CHANGED = {
