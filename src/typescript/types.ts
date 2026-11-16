@@ -170,27 +170,29 @@ export type SignerClass = {
   /**
    * Generates a signed Nano send block for a payment transaction.
    *
-   * @param params - Parameters
+   * @param params - Parameters object
    * @param params.payTo - Destination Nano account that the send amount is being sent to
    * @param params.amount - Amount of nano being sent in the send block
+   * @param params.network - The Nano network being used
+   * @param params.skipWorkGeneration - Whether work generation is being skipped
    * @returns Promise resolving to the generated send block
    * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
    */
   generateSendBlock(params: GenerateSendBlockParams): Promise<StateBlock>;
   /**
-   * Generates a signed Nano send block for a payment transaction.
+   * Generates work for a signed Nano send block.
    *
-   * @param params - Parameters
-   * @param params.payTo - Destination Nano account that the send amount is being sent to
-   * @param params.amount - Amount of nano being sent in the send block
-   * @returns Promise resolving to the generated send block
-   * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
+   * @param params - Parameters object
+   * @param params.block - The block to generate work for
+   * @param params.network - The Nano network being used
+   * @returns Promise resolving to the generated work
+   * @throws Error if something goes wrong during work generation
    */
   generateWork(params: GenerateWorkParams): Promise<string>;
   /**
    * Submits a block to the Nano network for processing.
    *
-   * @param params - Parameters
+   * @param params - Parameters object
    * @param params.block - The block to process
    * @returns Promise resolving to the processing result containing transaction hash
    * @throws Error if RPC call fails
@@ -199,16 +201,16 @@ export type SignerClass = {
   /**
    * Retrieves account information from the Nano node.
    *
-   * @param params - Parameters
+   * @param params - Parameters object
    * @param params.account - The Nano account to get information for
    * @returns Promise resolving to account info (frontier, balance, representative, etc.)
    * @throws Error if RPC URL is invalid or request fails
    */
   getAccountInfo(params: { account: AccountString }): Promise<AccountInfoSuccess>;
   /**
-   * Retrieves account information from the Nano node.
+   * Retrieves block information from the Nano node.
    *
-   * @param params - Parameters
+   * @param params - Parameters object
    * @param params.hash - The Nano block to get information for
    * @returns Promise resolving to block info
    * @throws Error if RPC URL is invalid or request fails
@@ -238,9 +240,9 @@ export type SignerClass = {
    */
   onAfterWorkGeneration(hook: AfterWorkGenerationHook): SignerClass;
   /**
-   * Returns the current configuration values.
+   * Returns the current Signer configuration values (without account private key for security purposes).
    *
-   * @returns Current configuration values
+   * @returns Current configuration values (without account private key)
    */
   getConfig(): ClientSignerConfig | ResourceServerSignerConfig | FacilitatorSignerConfig;
 };
@@ -248,7 +250,7 @@ export type SignerClass = {
 // ---------------------------------------------------
 
 /**
- * Configuration type for thedeprecated Nano Helper class.
+ * Configuration type for the deprecated Nano Helper class.
  */
 export type HelperConfigDeprecated = z.infer<typeof schemas.HELPER_CONFIG_DEPRECATED>;
 

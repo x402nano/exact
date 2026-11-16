@@ -30,28 +30,28 @@ The configuration object to pass into `createFacilitatorNanoSigner` has the foll
   rpcApiKey: "LPb5P...CWiqw", // OPTIONAL - Bearer authentication token if needed for access to Nano node RPC URL
   workGenerationUrl: "https://...", // OPTIONAL - URL of work generation endpoint 
   workGenerationApiKey: "tG0nH...asRgk", // OPTIONAL - Bearer authentication token if needed for access to work generation URL
-  workGenerator: function (block, network) {/* ...generate work here... */} // OPTIONAL - Custom work generation function
+  workGenerator: function ({block, network}) {/* ...generate work here... */} // OPTIONAL - Custom work generation function
 }
 ```
 
 ### 2. Configure Work Generation (Optional Step)
 
-If **`Facilitator`** should offer work generation for **`Clients`**, it must configure either `workGenerationUrl` or `workGenerator` in the Signer configuration (`workGenerator` will take precendence if both are configured) in order to generate work for the send block in the payment payload.
+If **`Facilitator`** should offer work generation for **`Clients`**, it must configure either `workGenerationUrl` or `workGenerator` in the Signer configuration (`workGenerator` will take precedence if both are configured) in order to generate work for the send block in the payment payload.
 
 `workGenerationUrl` must be an endpoint implementing a `work_generate` POST action matching that of the Nano node RPC equivalent, or a Nano node RPC endpoint itself.
 
-`workGenerator` takes a custom function that offers more flexibility for work generation. It takes two parameters (`block` and `network`) and must return the generated `work` value. Parameters to the `workGenerator` custom function will be passed in at runtime.
-- PARAMETER `block` - The send block from the payment payload. Work should be generated using `block.previous` as input, which is the hash of the frontier block of the payer's Nano account. Alternatively the Nano RPC action [work_generate] can take `block` as a parameter and will try to calculate the appropriate difficulty threshold based on ledger data, avoiding the task of determining the difficulty threshold for work generation from the `network` parameter below.
-- PARAMETER `network` - The Nano network being used. Can be used to determine the difficulty threshold for work generation. For example send blocks on `nano:mainnet` need work generated at a current difficulty threshold of `fffffff800000000`.
+`workGenerator` takes a custom function that offers more flexibility for work generation. At runtime the custom function is passed in an object with two fields (`block` and `network`) and must return the generated `work` value.
+- OBJECT FIELD `block` - The send block from the payment payload. Work should be generated using `block.previous` as input, which is the hash of the frontier block of the payer's Nano account. Alternatively the Nano RPC action [work_generate] can take `block` as a parameter and will try to calculate the appropriate difficulty threshold based on ledger data, avoiding the task of determining the difficulty threshold for work generation from the `network` parameter below.
+- OBJECT FIELD `network` - The Nano network being used. Can be used to determine the difficulty threshold for work generation. For example send blocks on `nano:mainnet` need work generated at a current difficulty threshold of `fffffff800000000`.
 - RETURNS `work` - Generated work value.
 
 Pseudocode example:
 ```js
 import { generateNanoWorkUsingGPU } from "NanoWorkGenerationLibrary"; // for illustration purposes, not a real library
 
-const myWorkGenerator = async function (block, network) {
+const myWorkGenerator = async function ({ block, network }) {
   let work = await generateNanoWorkUsingGPU(block.previous);
-  returns work;
+  return work;
 }
 
 // then pass myWorkGenerator into the `workGenerator` field of the configuration object for `createFacilitatorNanoSigner`
@@ -93,7 +93,7 @@ facilitator.register("nano:mainnet", exactNanoFacilitatorScheme);
 ```js
 import { ExactNanoFacilitatorScheme, createFacilitatorNanoSigner, fromHelperConfig } from "@x402nano/exact";
 
-const signer = new createFacilitatorNanoSigner(fromHelperConfig({
+const signer = createFacilitatorNanoSigner(fromHelperConfig({
   NANO_ACCOUNT_PRIVATE_KEY: process.env.CLIENT_NANO_ACCOUNT_PRIVATE_KEY,
   NANO_RPC_URL: process.env.NANO_RPC_URL,  
   NANO_WORK_GENERATION_URL: process.env.NANO_WORK_GENERATION_URL
