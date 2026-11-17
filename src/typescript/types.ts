@@ -23,9 +23,7 @@ export type Headers = z.infer<typeof schemas.HEADERS>;
 /**
  * Type representing the payload format used in the Nano x402 exact scheme
  */
-export type ExactNanoPayload = {
-  block: StateBlock;
-};
+export type ExactNanoPayload = z.infer<typeof schemas.EXACT_NANO_PAYLOAD>;
 
 /**
  * Type representing successful account information response from Nano node.
@@ -188,7 +186,7 @@ export type SignerClass = {
    * @returns Promise resolving to the generated work
    * @throws Error if something goes wrong during work generation
    */
-  generateWork(params: GenerateWorkParams): Promise<string>;
+  generateWork(params: GenerateWorkParams): Promise<WorkString>;
   /**
    * Submits a block to the Nano network for processing.
    *

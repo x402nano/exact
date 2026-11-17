@@ -69,8 +69,8 @@ const SIGNER_TYPE_FACILITATOR = "SIGNER_TYPE_FACILITATOR";
  * @param params.headers - Header to send with the RPC call e.g. auth headers
  * @param params.action - The Nano RPC action to perform
  * @param params.params - The Nano RPC request parameters to accompany the action
- * @param [params.timeout=60000] - Request timeout in milliseconds
- * @param [params.isGeneratingWork=false] - Is this Nano RPC call for work generation?
+ * @param params.timeout - Request timeout in milliseconds. Default is ONE_MINUTE
+ * @param params.isGeneratingWork - Is this Nano RPC call for work generation? Default is false
  * @returns Promise resolving to the JSON response
  * @throws Error if the request fails or returns an error
  */
@@ -102,8 +102,8 @@ async function nanoRpcCall({
 
     if (
       json.error &&
-      action !==
-        "block_info" /* block_info is allowed to return an error if a block doesn't exist */
+      action !== "account_info" && // RPC action "account_info" is allowed to return an error because account may not exist
+      action !== "block_info" // RPC action "block_info" is allowed to return an error because block may not exist
     ) {
       throw new Error(json.error);
     }
@@ -136,7 +136,7 @@ async function workGenerateInternal({
   block,
   network,
   workGenerator,
-}: WorkGenerateInternalParams): Promise<string> {
+}: WorkGenerateInternalParams): Promise<WorkString> {
   let workGenerateResponse;
 
   if (workGenerator) {
@@ -452,7 +452,7 @@ class Signer implements SignerClass {
    * @returns Promise resolving to the generated work
    * @throws Error if something goes wrong during work generation
    */
-  async generateWork({ block, network }: GenerateWorkParams): Promise<string> {
+  async generateWork({ block, network }: GenerateWorkParams): Promise<WorkString> {
     const context: WorkGenerationHookContext = {
       hash: block.previous,
     };

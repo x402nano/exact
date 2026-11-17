@@ -56,7 +56,7 @@ export const ACCOUNT_INFO_SUCCESS = z.object({
   representative_block: HashString(),
   representative: AccountString(),
   balance: RawAmountString(),
-  modified_timestamp: Timestamp,
+  modified_timestamp: Timestamp(),
   block_count: STRING_INT,
   account_version: STRING_INT,
   confirmed_balance: RawAmountString(),
@@ -73,7 +73,7 @@ export const BLOCK_INFO_SUCCESS = z.object({
   amount: RawAmountString(),
   balance: RawAmountString(),
   height: STRING_INT,
-  local_timestamp: STRING_INT,
+  local_timestamp: Timestamp(),
   successor: HashString(),
   confirmed: z.union([z.literal("true"), z.literal("false")]),
   contents: StateBlock(),
@@ -171,7 +171,7 @@ export const ASSET_AMOUNT = z
   .object({
     asset: z.literal(CURRENCY_CODE_XNO),
     amount: RawAmountString(),
-    extra: z.object({}).optional(),
+    extra: z.looseObject({}).optional(),
   })
   .strict()
   .refine(
