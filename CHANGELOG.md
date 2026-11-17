@@ -6,7 +6,7 @@
 
 ### 🚨 **Breaking Changes**
 
-- Custom `workGenerator` function parameters have changed. The new function signature takes two parameters `block` and `network`, as opposed to the older `hash` parameter. See the READMEs for [Client](https://github.com/x402nano/exact/blob/main/src/typescript/client/) and [Facilitator](https://github.com/x402nano/exact/blob/main/src/typescript/facilitator/) for more details.
+- Custom `workGenerator` function parameters have changed. The new function signature takes an object with two fields, `block` and `network`, as opposed to the older `hash` parameter. See the READMEs for [Client](https://github.com/x402nano/exact/blob/main/src/typescript/client/) and [Facilitator](https://github.com/x402nano/exact/blob/main/src/typescript/facilitator/) for more details.
 - The location of `.env.example` (and consequently `.env`) for tests and example scripts execution has moved to the root directory of the project.
 
 ### ⚠️ **Deprecations**

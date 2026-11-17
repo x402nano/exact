@@ -5,8 +5,8 @@ Facilitator example code for x402 Nano implementations
 
 A Facilitator verifies and settles payments created by a Client.
 
-A Resource Server passes along the CLient's payment payload
-to an Facilitator hosted elsewhere or hosts the Facilitator
+A Resource Server passes along the Client's payment payload
+to a Facilitator hosted elsewhere or hosts the Facilitator
 itself.
 
 A Facilitator exposes three endpoints:
@@ -100,7 +100,7 @@ app.post('/verify', async (req, res) => {
 
 // -----
 
-// Create the /verify endpoint of the Facilitator.
+// Create the /settle endpoint of the Facilitator.
 app.post('/settle', async (req, res) => {
   console.log('---------------------------------------------------')
   console.log('Received /settle request:')

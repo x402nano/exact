@@ -58,7 +58,7 @@ const myWorkGenerator = async function ({ block, network }) {
   return work;
 }
 
-// then pass myWorkGenerator into the `workGenerator` field of the configuration object for `createFacilitatorNanoSigner`
+// then pass myWorkGenerator into the `workGenerator` field of the configuration object for `createClientNanoSigner`
 ```
 
 Optional: add lifecycle hooks for work generation.

@@ -10,7 +10,7 @@ The payload contains a Nano send block.
 
 The Client does not process the Nano send block on the Nano network itself. Instead it
 sends the Payment Payload (containing the Nano send block) to the Resource Server
-which then has an Facilitator verify and process the Nano send block contained
+which then has a Facilitator verify and process the Nano send block contained
 within the Payment Payload.
 
 ------------------------------------------------
