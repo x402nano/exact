@@ -1,11 +1,11 @@
 export { ExactNanoScheme as ExactNanoClientScheme, ExactNanoScheme } from './client/index.js';
 export { ExactNanoScheme as ExactNanoServerScheme } from './server/index.js';
 export { ExactNanoScheme as ExactNanoFacilitatorScheme } from './facilitator/index.js';
-import { H as HelperConfigDeprecated, C as ClientSignerConfig, R as ResourceServerSignerConfig, F as FacilitatorSignerConfig, S as SignerClass, G as GetAccountInfoParams, A as AccountInfoSuccess, a as GetBlockInfoParams, B as BlockInfoSuccess, b as GenerateSendBlockParams, c as GenerateWorkParams, P as ProcessBlockParams, d as ProcessBlockSuccess, W as WorkGenerator, e as BeforeWorkGenerationHook, f as AfterWorkGenerationHook } from './types-D7EwDFVM.js';
-export { E as ExactNanoPayload, g as GetAccountParams, h as Headers, N as NanoRpcCallJsonResponse, i as NanoRpcCallParams, j as NanoRpcCallWorkGenerateInternalResponse, k as NanoRpcError, l as ProcessBlockResponse, U as Url, m as WorkGenerateInternalParams, n as WorkGenerationHookContext } from './types-D7EwDFVM.js';
-import { WorkDifficultyString, PrivateKeyString, AccountString, RawAmountString } from 'nano-sdk/types';
+import { H as HelperConfigDeprecated, C as ClientSignerConfig, R as ResourceServerSignerConfig, F as FacilitatorSignerConfig, S as SignerClass, G as GetAccountInfoParams, A as AccountInfoSuccess, a as GetBlockInfoParams, B as BlockInfoSuccess, b as GenerateSendBlockParams, c as GenerateWorkParams, P as ProcessBlockParams, d as ProcessBlockSuccess, W as WorkGenerator, e as BeforeWorkGenerationHook, f as AfterWorkGenerationHook } from './types-CnjI7d9U.js';
+export { E as ExactNanoPayload, g as GetAccountParams, h as Headers, N as NanoRpcCallJsonResponse, i as NanoRpcCallParams, j as NanoRpcCallWorkGenerateInternalResponse, k as NanoRpcError, l as ProcessBlockResponse, U as Url, m as WorkGenerateInternalParams, n as WorkGenerationHookContext } from './types-CnjI7d9U.js';
+import { WorkDifficultyString, PrivateKeyString, AccountString, RawAmountString, WorkString } from 'nano-sdk/types';
 import { StateBlock } from 'nano-sdk/blocks';
-import { AssetAmount, Price } from '@x402/core/types';
+import { AssetAmount } from '@x402/core/types';
 import 'zod';
 
 /**
@@ -26,12 +26,12 @@ declare const NANO_TESTNET_CAIP2 = "nano:testnet";
 declare const NANO_WILDCARD_CAIP2 = "nano:*";
 /**
  * Proof-of-Work difficulty threshold required for valid send blocks on Nano Mainnet.
- * This values ensures send blocks meet the minimum difficulty requirements on mainnet.
+ * This value ensures send blocks meet the minimum difficulty requirements on mainnet.
  */
 declare const SEND_BLOCK_WORK_THRESHOLD_MAINNET: WorkDifficultyString;
 /**
  * Proof-of-Work difficulty threshold required for valid send blocks on Nano Betanet.
- * This values ensures send blocks meet the minimum difficulty requirements on betanet.
+ * This value ensures send blocks meet the minimum difficulty requirements on betanet.
  */
 declare const SEND_BLOCK_WORK_THRESHOLD_BETANET: WorkDifficultyString;
 /**
@@ -72,24 +72,11 @@ declare const ERROR_FACILITATOR: string;
 declare const ERROR_CONFIG_INVALID_RPC_URL = "error_config_invalid_rpc_url";
 declare const ERROR_CONFIG_TEXT_RPC_URL_NOT_SET = "Config value \"rpcUrl\" not set";
 declare const ERROR_CONFIG_TEXT_INVALID_CONFIG = "Invalid config passed to Signer";
-declare const DEPRECATION_NOTICE = "DEPRECATION";
 declare const CURRENCY_CODE_XNO = "XNO";
-/**
- * Current Nano address prefix.
- */
-declare const NANO_PREFIX: string;
-/**
- * Legacy Nano address prefix.
- */
-declare const XRB_PREFIX: string;
 /**
  * Used by Client to signal that it wants work generated for its send block.
  */
 declare const CLIENT_NO_WORK: string;
-/**
- * Default number of seconds before a transaction attempt is considered timed out.
- */
-declare const DEFAULT_MAX_TIMEOUT_SECONDS = 60;
 /**
  * One second in milliseconds.
  */
@@ -110,7 +97,7 @@ declare function priceNanoUnits$1(amount: string | number, extra?: Record<string
  * @param extra - Extra object (optional)
  * @returns AssetAmount object
  */
-declare function priceRawUnits$1(amount: RawAmountString | Price, extra?: Record<string, unknown> | undefined): AssetAmount;
+declare function priceRawUnits$1(amount: RawAmountString, extra?: Record<string, unknown> | undefined): AssetAmount;
 /**
  * Derive a Nano account (nano_...) from its private key
  *
@@ -164,7 +151,7 @@ declare class Signer implements SignerClass {
     /**
      * Creates a new Signer instance.
      *
-     * @param params - Constructor parameters
+     * @param params - Parameters object
      * @param params.config - Configuration object for the Signer
      * @param params.signerType - Type of Signer (Client or Facilitator)
      */
@@ -175,7 +162,7 @@ declare class Signer implements SignerClass {
     /**
      * Retrieves account information from the Nano node.
      *
-     * @param params - The configuration object
+     * @param params - Parameters object
      * @param params.account - The account address to query
      * @returns Promise resolving to account info (frontier, balance, representative, etc.)
      * @throws Error if RPC URL is invalid or request fails
@@ -184,8 +171,8 @@ declare class Signer implements SignerClass {
     /**
      * Retrieves block information from the Nano node.
      *
-     * @param params - The configuration object
-     * @param params.hash - Hash of the block to retrive information for
+     * @param params - Parameters object
+     * @param params.hash - Hash of the block to retrieve information for
      * @returns Promise resolving to block info
      * @throws Error if RPC URL is invalid or request fails
      */
@@ -193,7 +180,11 @@ declare class Signer implements SignerClass {
     /**
      * Generates a signed Nano send block for a payment transaction.
      *
-     * @param params - Parameters including amount and destination address (payTo)
+     * @param params - Parameters object
+     * @param params.payTo - Destination Nano account that the send amount is being sent to
+     * @param params.amount - Amount of nano being sent in the send block
+     * @param params.network - The Nano network being used
+     * @param params.skipWorkGeneration - Whether work generation is being skipped
      * @returns Promise resolving to the generated send block
      * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
      */
@@ -207,11 +198,11 @@ declare class Signer implements SignerClass {
      * @returns Promise resolving to the generated work
      * @throws Error if something goes wrong during work generation
      */
-    generateWork({ block, network }: GenerateWorkParams): Promise<string>;
+    generateWork({ block, network }: GenerateWorkParams): Promise<WorkString>;
     /**
      * Submits a block to the Nano network for processing.
      *
-     * @param params - The configuration object
+     * @param params - Parameters object
      * @param params.block - The block to process
      * @returns Promise resolving to the processing result containing transaction hash
      * @throws Error if RPC call fails
@@ -241,7 +232,7 @@ declare class Signer implements SignerClass {
      */
     onAfterWorkGeneration(hook: AfterWorkGenerationHook): SignerClass;
     /**
-     * Returns the current configuration values (without account private key for security purposes).
+     * Returns the current Signer configuration values (without account private key for security purposes).
      *
      * @returns Current configuration values (without account private key)
      */
@@ -250,4 +241,4 @@ declare class Signer implements SignerClass {
 declare const priceRawUnits: typeof priceRawUnits$1;
 declare const priceNanoUnits: typeof priceNanoUnits$1;
 
-export { AccountInfoSuccess, AfterWorkGenerationHook, BeforeWorkGenerationHook, BlockInfoSuccess, CLIENT_NO_WORK, CURRENCY_CODE_XNO, ClientSignerConfig, DEFAULT_MAX_TIMEOUT_SECONDS, DEPRECATION_NOTICE, ERROR_ACCOUNT_NOT_FOUND, ERROR_AMOUNT_MISMATCH, ERROR_BLOCK_ALREADY_CONFIRMED, ERROR_BLOCK_AMOUNT_MISMATCH, ERROR_BLOCK_AWAITING_CONFIRMATION, ERROR_BLOCK_GENERATION, ERROR_BLOCK_NOT_BROADCAST, ERROR_CONFIG, ERROR_CONFIG_INVALID_RPC_URL, ERROR_CONFIG_TEXT_INVALID_CONFIG, ERROR_CONFIG_TEXT_RPC_URL_NOT_SET, ERROR_FACILITATOR, ERROR_FRONTIER_NOT_CONFIRMED, ERROR_INVALID_ASSET, ERROR_INVALID_BLOCK, ERROR_INVALID_WORK, ERROR_NANO_RPC, ERROR_NANO_WORK_GENERATION, ERROR_NETWORK_MISMATCH, ERROR_NOT_ENOUGH_BALANCE, ERROR_NO_ACCOUNT_FRONTIER, ERROR_PAYTO_LINK_MISMATCH, ERROR_PREVIOUS_NOT_FRONTIER, ERROR_PRICE, ERROR_RAW_AMOUNT, ERROR_SIGNER, ERROR_TIMEOUT_EXPIRED, ERROR_UNSUPPORTED_NETWORK, ERROR_UNSUPPORTED_SCHEME, ERROR_UNSUPPORTED_X402_VERSION, ERROR_WORK_UNAVAILABLE, FacilitatorSignerConfig, GenerateSendBlockParams, GenerateWorkParams, GetAccountInfoParams, GetBlockInfoParams, HelperConfigDeprecated, NANO_BETANET_CAIP2, NANO_MAINNET_CAIP2, NANO_PREFIX, NANO_TESTNET_CAIP2, NANO_WILDCARD_CAIP2, ONE_SECOND, ProcessBlockParams, ProcessBlockSuccess, ResourceServerSignerConfig, SEND_BLOCK_WORK_THRESHOLD_BETANET, SEND_BLOCK_WORK_THRESHOLD_MAINNET, SUPPORTED_NANO_NETWORKS, SignerClass, WorkGenerator, XRB_PREFIX, createClientNanoSigner, createFacilitatorNanoSigner, createResourceServerNanoSigner, deriveAccountFromPrivateKey, fromHelperConfig, priceNanoUnits, priceRawUnits };
+export { AccountInfoSuccess, AfterWorkGenerationHook, BeforeWorkGenerationHook, BlockInfoSuccess, CLIENT_NO_WORK, CURRENCY_CODE_XNO, ClientSignerConfig, ERROR_ACCOUNT_NOT_FOUND, ERROR_AMOUNT_MISMATCH, ERROR_BLOCK_ALREADY_CONFIRMED, ERROR_BLOCK_AMOUNT_MISMATCH, ERROR_BLOCK_AWAITING_CONFIRMATION, ERROR_BLOCK_GENERATION, ERROR_BLOCK_NOT_BROADCAST, ERROR_CONFIG, ERROR_CONFIG_INVALID_RPC_URL, ERROR_CONFIG_TEXT_INVALID_CONFIG, ERROR_CONFIG_TEXT_RPC_URL_NOT_SET, ERROR_FACILITATOR, ERROR_FRONTIER_NOT_CONFIRMED, ERROR_INVALID_ASSET, ERROR_INVALID_BLOCK, ERROR_INVALID_WORK, ERROR_NANO_RPC, ERROR_NANO_WORK_GENERATION, ERROR_NETWORK_MISMATCH, ERROR_NOT_ENOUGH_BALANCE, ERROR_NO_ACCOUNT_FRONTIER, ERROR_PAYTO_LINK_MISMATCH, ERROR_PREVIOUS_NOT_FRONTIER, ERROR_PRICE, ERROR_RAW_AMOUNT, ERROR_SIGNER, ERROR_TIMEOUT_EXPIRED, ERROR_UNSUPPORTED_NETWORK, ERROR_UNSUPPORTED_SCHEME, ERROR_UNSUPPORTED_X402_VERSION, ERROR_WORK_UNAVAILABLE, FacilitatorSignerConfig, GenerateSendBlockParams, GenerateWorkParams, GetAccountInfoParams, GetBlockInfoParams, HelperConfigDeprecated, NANO_BETANET_CAIP2, NANO_MAINNET_CAIP2, NANO_TESTNET_CAIP2, NANO_WILDCARD_CAIP2, ONE_SECOND, ProcessBlockParams, ProcessBlockSuccess, ResourceServerSignerConfig, SEND_BLOCK_WORK_THRESHOLD_BETANET, SEND_BLOCK_WORK_THRESHOLD_MAINNET, SUPPORTED_NANO_NETWORKS, SignerClass, WorkGenerator, createClientNanoSigner, createFacilitatorNanoSigner, createResourceServerNanoSigner, deriveAccountFromPrivateKey, fromHelperConfig, priceNanoUnits, priceRawUnits };

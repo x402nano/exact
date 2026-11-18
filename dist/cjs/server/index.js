@@ -112,7 +112,7 @@ var ACCOUNT_INFO_SUCCESS = z.object({
   representative_block: (0, import_types2.HashString)(),
   representative: (0, import_types2.AccountString)(),
   balance: (0, import_types2.RawAmountString)(),
-  modified_timestamp: import_types2.Timestamp,
+  modified_timestamp: (0, import_types2.Timestamp)(),
   block_count: STRING_INT,
   account_version: STRING_INT,
   confirmed_balance: (0, import_types2.RawAmountString)(),
@@ -125,7 +125,7 @@ var BLOCK_INFO_SUCCESS = z.object({
   amount: (0, import_types2.RawAmountString)(),
   balance: (0, import_types2.RawAmountString)(),
   height: STRING_INT,
-  local_timestamp: STRING_INT,
+  local_timestamp: (0, import_types2.Timestamp)(),
   successor: (0, import_types2.HashString)(),
   confirmed: z.union([z.literal("true"), z.literal("false")]),
   contents: (0, import_blocks.StateBlock)(),
@@ -157,7 +157,7 @@ var FACILITATOR_SIGNER_CONFIG = z.object({
 var HELPER_CONFIG_DEPRECATED = z.object({
   NANO_RPC_URL: URL.optional(),
   NANO_WORK_GENERATION_URL: URL.optional(),
-  NANO_ACCOUNT_PRIVATE_KEY: (0, import_types2.HashString)().optional()
+  NANO_ACCOUNT_PRIVATE_KEY: (0, import_types2.PrivateKeyString)().optional()
 });
 var PROCESS_BLOCK_SUCCESS = z.object({
   hash: (0, import_types2.HashString)()
@@ -177,7 +177,7 @@ var EXACT_NANO_PAYLOAD = z.object({
 var ASSET_AMOUNT = z.object({
   asset: z.literal(CURRENCY_CODE_XNO),
   amount: (0, import_types2.RawAmountString)(),
-  extra: z.object().optional()
+  extra: z.looseObject({}).optional()
 }).strict().refine(
   (data) => {
     const rawAmount = isRawUnits(data.amount) ? data.amount : convertNanoToRaw(data.amount);

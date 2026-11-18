@@ -3,16 +3,14 @@ import {
 } from "./chunk-I4PM46R4.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme2
-} from "./chunk-YDXN5SQV.mjs";
+} from "./chunk-MQTR5UL3.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme3
-} from "./chunk-45OS6JMX.mjs";
+} from "./chunk-NW7AMFKF.mjs";
 import {
   CLIENT_NO_WORK,
   CLIENT_SIGNER_CONFIG,
   CURRENCY_CODE_XNO,
-  DEFAULT_MAX_TIMEOUT_SECONDS,
-  DEPRECATION_NOTICE,
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
@@ -47,7 +45,6 @@ import {
   FACILITATOR_SIGNER_CONFIG,
   NANO_BETANET_CAIP2,
   NANO_MAINNET_CAIP2,
-  NANO_PREFIX,
   NANO_TESTNET_CAIP2,
   NANO_WILDCARD_CAIP2,
   ONE_SECOND,
@@ -55,7 +52,6 @@ import {
   SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   SUPPORTED_NANO_NETWORKS,
-  XRB_PREFIX,
   deriveAccountFromPrivateKey,
   ensureNanoPrefix,
   fromHelperConfig,
@@ -65,7 +61,7 @@ import {
   validateNanoAccountPrivateKey,
   validateNanoRpcUrl,
   validateNanoWorkGenerationUrl
-} from "./chunk-ENXE72SS.mjs";
+} from "./chunk-OXZ5ZYF6.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -99,7 +95,8 @@ async function nanoRpcCall({
       throw new Error(`HTTP ${res.status}: ${await res.text()}`);
     }
     const json = await res.json();
-    if (json.error && action !== "block_info") {
+    if (json.error && action !== "account_info" && // RPC action "account_info" is allowed to return an error because account may not exist
+    action !== "block_info") {
       throw new Error(json.error);
     }
     return json;
@@ -188,7 +185,7 @@ var Signer = class {
   /**
    * Creates a new Signer instance.
    *
-   * @param params - Constructor parameters
+   * @param params - Parameters object
    * @param params.config - Configuration object for the Signer
    * @param params.signerType - Type of Signer (Client or Facilitator)
    */
@@ -205,7 +202,7 @@ var Signer = class {
     __publicField(this, "afterWorkGenerationHooks", []);
     if (signerType !== SIGNER_TYPE_CLIENT && signerType !== SIGNER_TYPE_RESOURCE_SERVER && signerType !== SIGNER_TYPE_FACILITATOR) {
       throw new Error(
-        `${ERROR_SIGNER} - Use 'createClientNanoSigner', 'createResourceServerNanoSigner', or 'createFacilitatorNanoSigner' to create Nano signer`
+        `${ERROR_SIGNER} - Use 'createClientNanoSigner' or 'createFacilitatorNanoSigner' to create Nano signer`
       );
     }
     if (signerType === SIGNER_TYPE_CLIENT) {
@@ -242,7 +239,7 @@ var Signer = class {
   /**
    * Retrieves account information from the Nano node.
    *
-   * @param params - The configuration object
+   * @param params - Parameters object
    * @param params.account - The account address to query
    * @returns Promise resolving to account info (frontier, balance, representative, etc.)
    * @throws Error if RPC URL is invalid or request fails
@@ -266,8 +263,8 @@ var Signer = class {
   /**
    * Retrieves block information from the Nano node.
    *
-   * @param params - The configuration object
-   * @param params.hash - Hash of the block to retrive information for
+   * @param params - Parameters object
+   * @param params.hash - Hash of the block to retrieve information for
    * @returns Promise resolving to block info
    * @throws Error if RPC URL is invalid or request fails
    */
@@ -289,7 +286,11 @@ var Signer = class {
   /**
    * Generates a signed Nano send block for a payment transaction.
    *
-   * @param params - Parameters including amount and destination address (payTo)
+   * @param params - Parameters object
+   * @param params.payTo - Destination Nano account that the send amount is being sent to
+   * @param params.amount - Amount of nano being sent in the send block
+   * @param params.network - The Nano network being used
+   * @param params.skipWorkGeneration - Whether work generation is being skipped
    * @returns Promise resolving to the generated send block
    * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
    */
@@ -323,6 +324,8 @@ var Signer = class {
     });
     if (!params.skipWorkGeneration) {
       block.work = await this.generateWork({ block, network: params.network });
+    } else {
+      block.work = CLIENT_NO_WORK;
     }
     block.account = ensureNanoPrefix(block.account);
     block.link_as_account = ensureNanoPrefix(block.link_as_account);
@@ -358,7 +361,7 @@ var Signer = class {
   /**
    * Submits a block to the Nano network for processing.
    *
-   * @param params - The configuration object
+   * @param params - Parameters object
    * @param params.block - The block to process
    * @returns Promise resolving to the processing result containing transaction hash
    * @throws Error if RPC call fails
@@ -412,7 +415,7 @@ var Signer = class {
     return this;
   }
   /**
-   * Returns the current configuration values (without account private key for security purposes).
+   * Returns the current Signer configuration values (without account private key for security purposes).
    *
    * @returns Current configuration values (without account private key)
    */
@@ -429,8 +432,6 @@ var priceNanoUnits2 = priceNanoUnits;
 export {
   CLIENT_NO_WORK,
   CURRENCY_CODE_XNO,
-  DEFAULT_MAX_TIMEOUT_SECONDS,
-  DEPRECATION_NOTICE,
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
@@ -468,14 +469,12 @@ export {
   ExactNanoScheme2 as ExactNanoServerScheme,
   NANO_BETANET_CAIP2,
   NANO_MAINNET_CAIP2,
-  NANO_PREFIX,
   NANO_TESTNET_CAIP2,
   NANO_WILDCARD_CAIP2,
   ONE_SECOND,
   SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   SUPPORTED_NANO_NETWORKS,
-  XRB_PREFIX,
   createClientNanoSigner,
   createFacilitatorNanoSigner,
   createResourceServerNanoSigner,

@@ -1,6 +1,6 @@
 import * as z from 'zod';
 import { Network } from '@x402/core/types';
-import { AccountString, RawAmountString, HashString, WorkString, PrivateKeyString } from 'nano-sdk/types';
+import { AccountString, RawAmountString, WorkString, HashString, PrivateKeyString } from 'nano-sdk/types';
 import { StateBlock } from 'nano-sdk/blocks';
 
 /**
@@ -20,7 +20,7 @@ declare const ACCOUNT_INFO_SUCCESS: z.ZodObject<{
     representative_block: z.ZodString;
     representative: z.ZodString;
     balance: z.ZodString;
-    modified_timestamp: () => z.ZodBigInt;
+    modified_timestamp: z.ZodBigInt;
     block_count: z.ZodString;
     account_version: z.ZodString;
     confirmed_balance: z.ZodString;
@@ -36,7 +36,7 @@ declare const BLOCK_INFO_SUCCESS: z.ZodObject<{
     amount: z.ZodString;
     balance: z.ZodString;
     height: z.ZodString;
-    local_timestamp: z.ZodString;
+    local_timestamp: z.ZodBigInt;
     successor: z.ZodString;
     confirmed: z.ZodUnion<readonly [z.ZodLiteral<"true">, z.ZodLiteral<"false">]>;
     contents: z.ZodObject<{
@@ -149,6 +149,22 @@ declare const NANO_RPC_CALL_WORK_GENERATE_INTERNAL_RESPONSE: z.ZodObject<{
     multiplier: z.ZodString;
     hash: z.ZodString;
 }, z.core.$strip>;
+/**
+ * Schema for Exact Nano payment payload.
+ */
+declare const EXACT_NANO_PAYLOAD: z.ZodObject<{
+    block: z.ZodObject<{
+        type: z.ZodLiteral<"state">;
+        account: z.ZodString;
+        previous: z.ZodString;
+        representative: z.ZodString;
+        balance: z.ZodString;
+        link: z.ZodUnion<[z.ZodString, z.ZodString]>;
+        link_as_account: z.ZodString;
+        signature: z.ZodString;
+        work: z.ZodString;
+    }, z.core.$strip>;
+}, z.core.$strip>;
 
 /**
  * Type representing a valid URL format.
@@ -161,9 +177,7 @@ type Headers = z.infer<typeof HEADERS>;
 /**
  * Type representing the payload format used in the Nano x402 exact scheme
  */
-type ExactNanoPayload = {
-    block: StateBlock;
-};
+type ExactNanoPayload = z.infer<typeof EXACT_NANO_PAYLOAD>;
 /**
  * Type representing successful account information response from Nano node.
  */
@@ -291,27 +305,29 @@ type SignerClass = {
     /**
      * Generates a signed Nano send block for a payment transaction.
      *
-     * @param params - Parameters
+     * @param params - Parameters object
      * @param params.payTo - Destination Nano account that the send amount is being sent to
      * @param params.amount - Amount of nano being sent in the send block
+     * @param params.network - The Nano network being used
+     * @param params.skipWorkGeneration - Whether work generation is being skipped
      * @returns Promise resolving to the generated send block
      * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
      */
     generateSendBlock(params: GenerateSendBlockParams): Promise<StateBlock>;
     /**
-     * Generates a signed Nano send block for a payment transaction.
+     * Generates work for a signed Nano send block.
      *
-     * @param params - Parameters
-     * @param params.payTo - Destination Nano account that the send amount is being sent to
-     * @param params.amount - Amount of nano being sent in the send block
-     * @returns Promise resolving to the generated send block
-     * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
+     * @param params - Parameters object
+     * @param params.block - The block to generate work for
+     * @param params.network - The Nano network being used
+     * @returns Promise resolving to the generated work
+     * @throws Error if something goes wrong during work generation
      */
-    generateWork(params: GenerateWorkParams): Promise<string>;
+    generateWork(params: GenerateWorkParams): Promise<WorkString>;
     /**
      * Submits a block to the Nano network for processing.
      *
-     * @param params - Parameters
+     * @param params - Parameters object
      * @param params.block - The block to process
      * @returns Promise resolving to the processing result containing transaction hash
      * @throws Error if RPC call fails
@@ -320,7 +336,7 @@ type SignerClass = {
     /**
      * Retrieves account information from the Nano node.
      *
-     * @param params - Parameters
+     * @param params - Parameters object
      * @param params.account - The Nano account to get information for
      * @returns Promise resolving to account info (frontier, balance, representative, etc.)
      * @throws Error if RPC URL is invalid or request fails
@@ -329,9 +345,9 @@ type SignerClass = {
         account: AccountString;
     }): Promise<AccountInfoSuccess>;
     /**
-     * Retrieves account information from the Nano node.
+     * Retrieves block information from the Nano node.
      *
-     * @param params - Parameters
+     * @param params - Parameters object
      * @param params.hash - The Nano block to get information for
      * @returns Promise resolving to block info
      * @throws Error if RPC URL is invalid or request fails
@@ -363,14 +379,14 @@ type SignerClass = {
      */
     onAfterWorkGeneration(hook: AfterWorkGenerationHook): SignerClass;
     /**
-     * Returns the current configuration values.
+     * Returns the current Signer configuration values (without account private key for security purposes).
      *
-     * @returns Current configuration values
+     * @returns Current configuration values (without account private key)
      */
     getConfig(): ClientSignerConfig | ResourceServerSignerConfig | FacilitatorSignerConfig;
 };
 /**
- * Configuration type for thedeprecated Nano Helper class.
+ * Configuration type for the deprecated Nano Helper class.
  */
 type HelperConfigDeprecated = z.infer<typeof HELPER_CONFIG_DEPRECATED>;
 /**

@@ -68,10 +68,7 @@ var ERROR_BLOCK_NOT_BROADCAST = "error_block_not_broadcast";
 var ERROR_WORK_UNAVAILABLE = "error_work_unavailable";
 var ERROR_FACILITATOR = "error_facilitator";
 var CURRENCY_CODE_XNO = "XNO";
-var NANO_PREFIX = "nano_";
-var XRB_PREFIX = "xrb_";
 var CLIENT_NO_WORK = "0000000000000000";
-var DEFAULT_MAX_TIMEOUT_SECONDS = 60;
 var ONE_SECOND = 1e3;
 
 // src/typescript/utils.ts
@@ -103,7 +100,7 @@ var ACCOUNT_INFO_SUCCESS = z.object({
   representative_block: (0, import_types.HashString)(),
   representative: (0, import_types.AccountString)(),
   balance: (0, import_types.RawAmountString)(),
-  modified_timestamp: import_types.Timestamp,
+  modified_timestamp: (0, import_types.Timestamp)(),
   block_count: STRING_INT,
   account_version: STRING_INT,
   confirmed_balance: (0, import_types.RawAmountString)(),
@@ -116,7 +113,7 @@ var BLOCK_INFO_SUCCESS = z.object({
   amount: (0, import_types.RawAmountString)(),
   balance: (0, import_types.RawAmountString)(),
   height: STRING_INT,
-  local_timestamp: STRING_INT,
+  local_timestamp: (0, import_types.Timestamp)(),
   successor: (0, import_types.HashString)(),
   confirmed: z.union([z.literal("true"), z.literal("false")]),
   contents: (0, import_blocks.StateBlock)(),
@@ -148,7 +145,7 @@ var FACILITATOR_SIGNER_CONFIG = z.object({
 var HELPER_CONFIG_DEPRECATED = z.object({
   NANO_RPC_URL: URL.optional(),
   NANO_WORK_GENERATION_URL: URL.optional(),
-  NANO_ACCOUNT_PRIVATE_KEY: (0, import_types.HashString)().optional()
+  NANO_ACCOUNT_PRIVATE_KEY: (0, import_types.PrivateKeyString)().optional()
 });
 var PROCESS_BLOCK_SUCCESS = z.object({
   hash: (0, import_types.HashString)()
@@ -168,7 +165,7 @@ var EXACT_NANO_PAYLOAD = z.object({
 var ASSET_AMOUNT = z.object({
   asset: z.literal(CURRENCY_CODE_XNO),
   amount: (0, import_types.RawAmountString)(),
-  extra: z.object().optional()
+  extra: z.looseObject({}).optional()
 }).strict().refine(
   (data) => {
     const rawAmount = isRawUnits(data.amount) ? data.amount : convertNanoToRaw(data.amount);
@@ -187,6 +184,8 @@ var ASSET_AMOUNT = z.object({
 });
 
 // src/typescript/utils.ts
+var XRB_PREFIX = "xrb_";
+var NANO_PREFIX = "nano_";
 function ensureNanoPrefix(nanoAccount) {
   return nanoAccount.replace(XRB_PREFIX, NANO_PREFIX);
 }
@@ -324,6 +323,7 @@ var ExactNanoScheme = class {
    * ```
    */
   async settle(payload, requirements) {
+    const MAX_TIMEOUT_SECONDS = requirements.maxTimeoutSeconds || 60;
     const exactNanoPayload = payload.payload;
     const constructSettleUnsuccessfulResponse_ = constructSettleUnsuccessfulResponse(
       payload?.accepted?.network,
@@ -395,7 +395,7 @@ var ExactNanoScheme = class {
       }
       await sleep(ONE_SECOND * 0.5);
       let elapsedSeconds = 0;
-      while (elapsedSeconds < (requirements.maxTimeoutSeconds || DEFAULT_MAX_TIMEOUT_SECONDS)) {
+      while (elapsedSeconds < MAX_TIMEOUT_SECONDS) {
         elapsedSeconds++;
         let getBlockInfoResponse;
         try {

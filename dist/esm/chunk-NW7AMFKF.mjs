@@ -1,7 +1,6 @@
 import {
   CLIENT_NO_WORK,
   CURRENCY_CODE_XNO,
-  DEFAULT_MAX_TIMEOUT_SECONDS,
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
@@ -30,7 +29,7 @@ import {
   SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   ensureNanoPrefix
-} from "./chunk-ENXE72SS.mjs";
+} from "./chunk-OXZ5ZYF6.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -169,6 +168,7 @@ var ExactNanoScheme = class {
    * ```
    */
   async settle(payload, requirements) {
+    const MAX_TIMEOUT_SECONDS = requirements.maxTimeoutSeconds || 60;
     const exactNanoPayload = payload.payload;
     const constructSettleUnsuccessfulResponse_ = constructSettleUnsuccessfulResponse(
       payload?.accepted?.network,
@@ -240,7 +240,7 @@ var ExactNanoScheme = class {
       }
       await sleep(ONE_SECOND * 0.5);
       let elapsedSeconds = 0;
-      while (elapsedSeconds < (requirements.maxTimeoutSeconds || DEFAULT_MAX_TIMEOUT_SECONDS)) {
+      while (elapsedSeconds < MAX_TIMEOUT_SECONDS) {
         elapsedSeconds++;
         let getBlockInfoResponse;
         try {
@@ -427,4 +427,4 @@ var ExactNanoScheme = class {
 export {
   ExactNanoScheme
 };
-//# sourceMappingURL=chunk-45OS6JMX.mjs.map
+//# sourceMappingURL=chunk-NW7AMFKF.mjs.map

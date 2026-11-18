@@ -34,8 +34,6 @@ var typescript_exports = {};
 __export(typescript_exports, {
   CLIENT_NO_WORK: () => CLIENT_NO_WORK,
   CURRENCY_CODE_XNO: () => CURRENCY_CODE_XNO,
-  DEFAULT_MAX_TIMEOUT_SECONDS: () => DEFAULT_MAX_TIMEOUT_SECONDS,
-  DEPRECATION_NOTICE: () => DEPRECATION_NOTICE,
   ERROR_ACCOUNT_NOT_FOUND: () => ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH: () => ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED: () => ERROR_BLOCK_ALREADY_CONFIRMED,
@@ -73,14 +71,12 @@ __export(typescript_exports, {
   ExactNanoServerScheme: () => ExactNanoScheme2,
   NANO_BETANET_CAIP2: () => NANO_BETANET_CAIP2,
   NANO_MAINNET_CAIP2: () => NANO_MAINNET_CAIP2,
-  NANO_PREFIX: () => NANO_PREFIX,
   NANO_TESTNET_CAIP2: () => NANO_TESTNET_CAIP2,
   NANO_WILDCARD_CAIP2: () => NANO_WILDCARD_CAIP2,
   ONE_SECOND: () => ONE_SECOND,
   SEND_BLOCK_WORK_THRESHOLD_BETANET: () => SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET: () => SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   SUPPORTED_NANO_NETWORKS: () => SUPPORTED_NANO_NETWORKS,
-  XRB_PREFIX: () => XRB_PREFIX,
   createClientNanoSigner: () => createClientNanoSigner,
   createFacilitatorNanoSigner: () => createFacilitatorNanoSigner,
   createResourceServerNanoSigner: () => createResourceServerNanoSigner,
@@ -205,12 +201,8 @@ var ERROR_FACILITATOR = "error_facilitator";
 var ERROR_CONFIG_INVALID_RPC_URL = `error_config_invalid_rpc_url`;
 var ERROR_CONFIG_TEXT_RPC_URL_NOT_SET = `Config value "rpcUrl" not set`;
 var ERROR_CONFIG_TEXT_INVALID_CONFIG = `Invalid config passed to Signer`;
-var DEPRECATION_NOTICE = "DEPRECATION";
 var CURRENCY_CODE_XNO = "XNO";
-var NANO_PREFIX = "nano_";
-var XRB_PREFIX = "xrb_";
 var CLIENT_NO_WORK = "0000000000000000";
-var DEFAULT_MAX_TIMEOUT_SECONDS = 60;
 var ONE_SECOND = 1e3;
 
 // src/typescript/utils.ts
@@ -218,6 +210,8 @@ var import_bignumber = __toESM(require("bignumber.js"));
 var import_math = require("nano-sdk/math");
 var import_crypto = require("nano-sdk/crypto");
 var import_types = require("nano-sdk/types");
+var XRB_PREFIX = "xrb_";
+var NANO_PREFIX = "nano_";
 function ensureNanoPrefix(nanoAccount) {
   return nanoAccount.replace(XRB_PREFIX, NANO_PREFIX);
 }
@@ -272,22 +266,21 @@ function isNanoUnits(amount) {
 function convertNanoToRaw(amount) {
   return (0, import_math.nanoToRaw)({ nano: amount });
 }
-function validateNanoRpcUrl(rpcUrl, bypassNullCheck = false) {
-  if (!bypassNullCheck) {
-    if (!rpcUrl) {
-      throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
-    }
-    if (!URL.safeParse(rpcUrl).success) {
-      throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
-    }
+function validateNanoRpcUrl(rpcUrl) {
+  if (!rpcUrl) {
+    throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
+  }
+  if (!URL.safeParse(rpcUrl).success) {
+    throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
   }
   return true;
 }
-function validateNanoWorkGenerationUrl(workGenerationUrl, bypassNullCheck = false) {
-  if (!bypassNullCheck) {
-    if (!URL.safeParse(workGenerationUrl).success) {
-      throw new Error(`${ERROR_CONFIG} - 'workGenerationUrl' is not a valid URL`);
-    }
+function validateNanoWorkGenerationUrl(workGenerationUrl) {
+  if (!workGenerationUrl) {
+    throw new Error(`${ERROR_CONFIG} - Config value "workGenerationUrl" not set`);
+  }
+  if (!URL.safeParse(workGenerationUrl).success) {
+    throw new Error(`${ERROR_CONFIG} - Config value 'workGenerationUrl' is not a valid URL`);
   }
   return true;
 }
@@ -349,7 +342,7 @@ var ACCOUNT_INFO_SUCCESS = z.object({
   representative_block: (0, import_types2.HashString)(),
   representative: (0, import_types2.AccountString)(),
   balance: (0, import_types2.RawAmountString)(),
-  modified_timestamp: import_types2.Timestamp,
+  modified_timestamp: (0, import_types2.Timestamp)(),
   block_count: STRING_INT,
   account_version: STRING_INT,
   confirmed_balance: (0, import_types2.RawAmountString)(),
@@ -362,7 +355,7 @@ var BLOCK_INFO_SUCCESS = z.object({
   amount: (0, import_types2.RawAmountString)(),
   balance: (0, import_types2.RawAmountString)(),
   height: STRING_INT,
-  local_timestamp: STRING_INT,
+  local_timestamp: (0, import_types2.Timestamp)(),
   successor: (0, import_types2.HashString)(),
   confirmed: z.union([z.literal("true"), z.literal("false")]),
   contents: (0, import_blocks.StateBlock)(),
@@ -394,7 +387,7 @@ var FACILITATOR_SIGNER_CONFIG = z.object({
 var HELPER_CONFIG_DEPRECATED = z.object({
   NANO_RPC_URL: URL.optional(),
   NANO_WORK_GENERATION_URL: URL.optional(),
-  NANO_ACCOUNT_PRIVATE_KEY: (0, import_types2.HashString)().optional()
+  NANO_ACCOUNT_PRIVATE_KEY: (0, import_types2.PrivateKeyString)().optional()
 });
 var PROCESS_BLOCK_SUCCESS = z.object({
   hash: (0, import_types2.HashString)()
@@ -414,7 +407,7 @@ var EXACT_NANO_PAYLOAD = z.object({
 var ASSET_AMOUNT = z.object({
   asset: z.literal(CURRENCY_CODE_XNO),
   amount: (0, import_types2.RawAmountString)(),
-  extra: z.object().optional()
+  extra: z.looseObject({}).optional()
 }).strict().refine(
   (data) => {
     const rawAmount = isRawUnits(data.amount) ? data.amount : convertNanoToRaw(data.amount);
@@ -640,6 +633,7 @@ var ExactNanoScheme3 = class {
    * ```
    */
   async settle(payload, requirements) {
+    const MAX_TIMEOUT_SECONDS = requirements.maxTimeoutSeconds || 60;
     const exactNanoPayload = payload.payload;
     const constructSettleUnsuccessfulResponse_ = constructSettleUnsuccessfulResponse(
       payload?.accepted?.network,
@@ -711,7 +705,7 @@ var ExactNanoScheme3 = class {
       }
       await sleep(ONE_SECOND * 0.5);
       let elapsedSeconds = 0;
-      while (elapsedSeconds < (requirements.maxTimeoutSeconds || DEFAULT_MAX_TIMEOUT_SECONDS)) {
+      while (elapsedSeconds < MAX_TIMEOUT_SECONDS) {
         elapsedSeconds++;
         let getBlockInfoResponse;
         try {
@@ -924,7 +918,8 @@ async function nanoRpcCall({
       throw new Error(`HTTP ${res.status}: ${await res.text()}`);
     }
     const json = await res.json();
-    if (json.error && action !== "block_info") {
+    if (json.error && action !== "account_info" && // RPC action "account_info" is allowed to return an error because account may not exist
+    action !== "block_info") {
       throw new Error(json.error);
     }
     return json;
@@ -1013,7 +1008,7 @@ var Signer = class {
   /**
    * Creates a new Signer instance.
    *
-   * @param params - Constructor parameters
+   * @param params - Parameters object
    * @param params.config - Configuration object for the Signer
    * @param params.signerType - Type of Signer (Client or Facilitator)
    */
@@ -1030,7 +1025,7 @@ var Signer = class {
     __publicField(this, "afterWorkGenerationHooks", []);
     if (signerType !== SIGNER_TYPE_CLIENT && signerType !== SIGNER_TYPE_RESOURCE_SERVER && signerType !== SIGNER_TYPE_FACILITATOR) {
       throw new Error(
-        `${ERROR_SIGNER} - Use 'createClientNanoSigner', 'createResourceServerNanoSigner', or 'createFacilitatorNanoSigner' to create Nano signer`
+        `${ERROR_SIGNER} - Use 'createClientNanoSigner' or 'createFacilitatorNanoSigner' to create Nano signer`
       );
     }
     if (signerType === SIGNER_TYPE_CLIENT) {
@@ -1067,7 +1062,7 @@ var Signer = class {
   /**
    * Retrieves account information from the Nano node.
    *
-   * @param params - The configuration object
+   * @param params - Parameters object
    * @param params.account - The account address to query
    * @returns Promise resolving to account info (frontier, balance, representative, etc.)
    * @throws Error if RPC URL is invalid or request fails
@@ -1091,8 +1086,8 @@ var Signer = class {
   /**
    * Retrieves block information from the Nano node.
    *
-   * @param params - The configuration object
-   * @param params.hash - Hash of the block to retrive information for
+   * @param params - Parameters object
+   * @param params.hash - Hash of the block to retrieve information for
    * @returns Promise resolving to block info
    * @throws Error if RPC URL is invalid or request fails
    */
@@ -1114,7 +1109,11 @@ var Signer = class {
   /**
    * Generates a signed Nano send block for a payment transaction.
    *
-   * @param params - Parameters including amount and destination address (payTo)
+   * @param params - Parameters object
+   * @param params.payTo - Destination Nano account that the send amount is being sent to
+   * @param params.amount - Amount of nano being sent in the send block
+   * @param params.network - The Nano network being used
+   * @param params.skipWorkGeneration - Whether work generation is being skipped
    * @returns Promise resolving to the generated send block
    * @throws Error if configuration is invalid, account is unopened, or balance is insufficient
    */
@@ -1148,6 +1147,8 @@ var Signer = class {
     });
     if (!params.skipWorkGeneration) {
       block.work = await this.generateWork({ block, network: params.network });
+    } else {
+      block.work = CLIENT_NO_WORK;
     }
     block.account = ensureNanoPrefix(block.account);
     block.link_as_account = ensureNanoPrefix(block.link_as_account);
@@ -1183,7 +1184,7 @@ var Signer = class {
   /**
    * Submits a block to the Nano network for processing.
    *
-   * @param params - The configuration object
+   * @param params - Parameters object
    * @param params.block - The block to process
    * @returns Promise resolving to the processing result containing transaction hash
    * @throws Error if RPC call fails
@@ -1237,7 +1238,7 @@ var Signer = class {
     return this;
   }
   /**
-   * Returns the current configuration values (without account private key for security purposes).
+   * Returns the current Signer configuration values (without account private key for security purposes).
    *
    * @returns Current configuration values (without account private key)
    */
@@ -1255,8 +1256,6 @@ var priceNanoUnits2 = priceNanoUnits;
 0 && (module.exports = {
   CLIENT_NO_WORK,
   CURRENCY_CODE_XNO,
-  DEFAULT_MAX_TIMEOUT_SECONDS,
-  DEPRECATION_NOTICE,
   ERROR_ACCOUNT_NOT_FOUND,
   ERROR_AMOUNT_MISMATCH,
   ERROR_BLOCK_ALREADY_CONFIRMED,
@@ -1294,14 +1293,12 @@ var priceNanoUnits2 = priceNanoUnits;
   ExactNanoServerScheme,
   NANO_BETANET_CAIP2,
   NANO_MAINNET_CAIP2,
-  NANO_PREFIX,
   NANO_TESTNET_CAIP2,
   NANO_WILDCARD_CAIP2,
   ONE_SECOND,
   SEND_BLOCK_WORK_THRESHOLD_BETANET,
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   SUPPORTED_NANO_NETWORKS,
-  XRB_PREFIX,
   createClientNanoSigner,
   createFacilitatorNanoSigner,
   createResourceServerNanoSigner,

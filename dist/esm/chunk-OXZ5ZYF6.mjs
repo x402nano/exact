@@ -42,12 +42,8 @@ var ERROR_FACILITATOR = "error_facilitator";
 var ERROR_CONFIG_INVALID_RPC_URL = `error_config_invalid_rpc_url`;
 var ERROR_CONFIG_TEXT_RPC_URL_NOT_SET = `Config value "rpcUrl" not set`;
 var ERROR_CONFIG_TEXT_INVALID_CONFIG = `Invalid config passed to Signer`;
-var DEPRECATION_NOTICE = "DEPRECATION";
 var CURRENCY_CODE_XNO = "XNO";
-var NANO_PREFIX = "nano_";
-var XRB_PREFIX = "xrb_";
 var CLIENT_NO_WORK = "0000000000000000";
-var DEFAULT_MAX_TIMEOUT_SECONDS = 60;
 var ONE_SECOND = 1e3;
 
 // src/typescript/utils.ts
@@ -88,7 +84,7 @@ var ACCOUNT_INFO_SUCCESS = z.object({
   representative_block: HashString(),
   representative: AccountString(),
   balance: RawAmountString(),
-  modified_timestamp: Timestamp,
+  modified_timestamp: Timestamp(),
   block_count: STRING_INT,
   account_version: STRING_INT,
   confirmed_balance: RawAmountString(),
@@ -101,7 +97,7 @@ var BLOCK_INFO_SUCCESS = z.object({
   amount: RawAmountString(),
   balance: RawAmountString(),
   height: STRING_INT,
-  local_timestamp: STRING_INT,
+  local_timestamp: Timestamp(),
   successor: HashString(),
   confirmed: z.union([z.literal("true"), z.literal("false")]),
   contents: StateBlock(),
@@ -133,7 +129,7 @@ var FACILITATOR_SIGNER_CONFIG = z.object({
 var HELPER_CONFIG_DEPRECATED = z.object({
   NANO_RPC_URL: URL.optional(),
   NANO_WORK_GENERATION_URL: URL.optional(),
-  NANO_ACCOUNT_PRIVATE_KEY: HashString().optional()
+  NANO_ACCOUNT_PRIVATE_KEY: PrivateKeyString().optional()
 });
 var PROCESS_BLOCK_SUCCESS = z.object({
   hash: HashString()
@@ -153,7 +149,7 @@ var EXACT_NANO_PAYLOAD = z.object({
 var ASSET_AMOUNT = z.object({
   asset: z.literal(CURRENCY_CODE_XNO),
   amount: RawAmountString(),
-  extra: z.object().optional()
+  extra: z.looseObject({}).optional()
 }).strict().refine(
   (data) => {
     const rawAmount = isRawUnits(data.amount) ? data.amount : convertNanoToRaw(data.amount);
@@ -172,6 +168,8 @@ var ASSET_AMOUNT = z.object({
 });
 
 // src/typescript/utils.ts
+var XRB_PREFIX = "xrb_";
+var NANO_PREFIX = "nano_";
 function ensureNanoPrefix(nanoAccount) {
   return nanoAccount.replace(XRB_PREFIX, NANO_PREFIX);
 }
@@ -226,22 +224,21 @@ function isNanoUnits(amount) {
 function convertNanoToRaw(amount) {
   return nanoToRaw({ nano: amount });
 }
-function validateNanoRpcUrl(rpcUrl, bypassNullCheck = false) {
-  if (!bypassNullCheck) {
-    if (!rpcUrl) {
-      throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
-    }
-    if (!URL.safeParse(rpcUrl).success) {
-      throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
-    }
+function validateNanoRpcUrl(rpcUrl) {
+  if (!rpcUrl) {
+    throw new Error(`${ERROR_CONFIG} - ${ERROR_CONFIG_TEXT_RPC_URL_NOT_SET}`);
+  }
+  if (!URL.safeParse(rpcUrl).success) {
+    throw new Error(ERROR_CONFIG_INVALID_RPC_URL);
   }
   return true;
 }
-function validateNanoWorkGenerationUrl(workGenerationUrl, bypassNullCheck = false) {
-  if (!bypassNullCheck) {
-    if (!URL.safeParse(workGenerationUrl).success) {
-      throw new Error(`${ERROR_CONFIG} - 'workGenerationUrl' is not a valid URL`);
-    }
+function validateNanoWorkGenerationUrl(workGenerationUrl) {
+  if (!workGenerationUrl) {
+    throw new Error(`${ERROR_CONFIG} - Config value "workGenerationUrl" not set`);
+  }
+  if (!URL.safeParse(workGenerationUrl).success) {
+    throw new Error(`${ERROR_CONFIG} - Config value 'workGenerationUrl' is not a valid URL`);
   }
   return true;
 }
@@ -322,12 +319,8 @@ export {
   ERROR_CONFIG_INVALID_RPC_URL,
   ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
   ERROR_CONFIG_TEXT_INVALID_CONFIG,
-  DEPRECATION_NOTICE,
   CURRENCY_CODE_XNO,
-  NANO_PREFIX,
-  XRB_PREFIX,
   CLIENT_NO_WORK,
-  DEFAULT_MAX_TIMEOUT_SECONDS,
   ONE_SECOND,
   ensureNanoPrefix,
   priceNanoUnits,
@@ -346,4 +339,4 @@ export {
   FACILITATOR_SIGNER_CONFIG,
   ASSET_AMOUNT
 };
-//# sourceMappingURL=chunk-ENXE72SS.mjs.map
+//# sourceMappingURL=chunk-OXZ5ZYF6.mjs.map
