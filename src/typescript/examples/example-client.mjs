@@ -17,7 +17,7 @@ within the Payment Payload.
 */
 
 import { x402Client, x402HTTPClient } from "@x402/core/client"
-import { ExactNanoClientScheme, createClientNanoSigner, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
+import { ExactNanoClientScheme, createClientNanoSigner, NANO_MAINNET_CAIP2 } from '@x402nano/exact'
 
 const NANO_NETWORK = process.env.NANO_NETWORK || NANO_MAINNET_CAIP2
 

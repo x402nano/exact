@@ -15,7 +15,7 @@ confirmation hash back to the Client.
 
 import express from "express"
 import { x402ResourceServer, HTTPFacilitatorClient } from "@x402/core/server"
-import { ExactNanoServerScheme, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
+import { ExactNanoServerScheme, NANO_MAINNET_CAIP2 } from '@x402nano/exact'
 
 const NANO_NETWORK = process.env.NANO_NETWORK || NANO_MAINNET_CAIP2
 

@@ -18,7 +18,7 @@ A Facilitator exposes three endpoints:
 */
 
 import { x402Facilitator } from '@x402/core/facilitator'
-import { ExactNanoFacilitatorScheme, createFacilitatorNanoSigner, NANO_MAINNET_CAIP2 } from '../../../dist/esm/index.mjs'
+import { ExactNanoFacilitatorScheme, createFacilitatorNanoSigner, NANO_MAINNET_CAIP2 } from '@x402nano/exact'
 import express from 'express'
 
 // Nano RPC is required for the Facilitator to function
