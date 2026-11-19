@@ -7,12 +7,10 @@ import {
   Network,
 } from "@x402/core/types";
 import BigNumber from "bignumber.js";
-import { HashString, AccountString, WorkDifficultyString, WorkString } from "nano-sdk/types";
+import { HashString, AccountString, WorkString } from "nano-sdk/types";
 import { SignerClass, ExactNanoPayload, ProcessBlockResponse } from "../types";
 import {
   CURRENCY_CODE_XNO,
-  SEND_BLOCK_WORK_THRESHOLD_MAINNET,
-  SEND_BLOCK_WORK_THRESHOLD_BETANET,
   ERROR_UNSUPPORTED_X402_VERSION,
   ERROR_UNSUPPORTED_NETWORK,
   ERROR_NETWORK_MISMATCH,
@@ -34,13 +32,11 @@ import {
   ERROR_FACILITATOR,
   ERROR_NANO_RPC,
   ERROR_NOT_ENOUGH_BALANCE,
-  NANO_BETANET_CAIP2,
-  NANO_TESTNET_CAIP2,
   CLIENT_NO_WORK,
   ERROR_WORK_UNAVAILABLE,
   ONE_SECOND,
 } from "../constants";
-import { ensureNanoPrefix } from "../utils";
+import { ensureNanoPrefix, difficultyByNetwork } from "../utils";
 import {
   derivePublicKeyFromAccount,
   verifyBlock as verifyBlock_,
@@ -85,7 +81,7 @@ function constructVerifyInvalidResponse(payer: AccountString) {
 /**
  * Constructs part of a standardized unsuccessful settlement response.
  *
- * @param network - nano network to use
+ * @param network - Nano network to use (CAIP-2 network identifier)
  * @param payer - Nano account making the payment
  * @returns A SettleResponse object indicating failure
  */
@@ -601,21 +597,11 @@ export class ExactNanoScheme implements SchemeNetworkFacilitator {
       // 14. Work Difficulty Check
 
       if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
-        let workThreshold: WorkDifficultyString;
-        if (
-          requirements.network === NANO_BETANET_CAIP2 ||
-          requirements.network === NANO_TESTNET_CAIP2
-        ) {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_BETANET;
-        } else {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_MAINNET;
-        }
-
         try {
           let isWorkValid = verifyWork({
             hash: frontier,
             work: exactNanoPayload.block.work,
-            threshold: workThreshold,
+            threshold: difficultyByNetwork(requirements.network),
           });
 
           if (!isWorkValid) {

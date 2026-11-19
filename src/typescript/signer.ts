@@ -39,6 +39,7 @@ import {
   validateNanoAccountPrivateKey,
   validateNanoWorkGenerationUrl,
   validateCustomWorkGenerator,
+  difficultyByNetwork,
 } from "./utils";
 import {
   ERROR_SIGNER,
@@ -160,8 +161,7 @@ async function workGenerateInternal({
         action: "work_generate",
         params: {
           hash: block.previous,
-          block,
-          json_block: true,
+          difficulty: difficultyByNetwork(network),
         },
         timeout: 5 * ONE_MINUTE,
         isGeneratingWork: true,
@@ -170,7 +170,7 @@ async function workGenerateInternal({
       let isWorkValid: boolean = verifyWork({
         hash: block.previous,
         work: workGenerateResponse.work,
-        threshold: workGenerateResponse.difficulty,
+        threshold: difficultyByNetwork(network),
       });
 
       if (isWorkValid) {

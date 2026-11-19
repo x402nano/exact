@@ -1,8 +1,14 @@
-import { AssetAmount } from "@x402/core/types";
+import { AssetAmount, Network } from "@x402/core/types";
 import BigNumber from "bignumber.js";
 import { nanoToRaw } from "nano-sdk/math";
 import { deriveAccountFromPrivateKey as deriveAccountFromPrivateKey_ } from "nano-sdk/crypto";
-import { RawAmountString, NanoAmountString, AccountString, PrivateKeyString } from "nano-sdk/types";
+import {
+  RawAmountString,
+  NanoAmountString,
+  AccountString,
+  PrivateKeyString,
+  WorkDifficultyString,
+} from "nano-sdk/types";
 import {
   ClientSignerConfig,
   FacilitatorSignerConfig,
@@ -18,6 +24,9 @@ import {
   ERROR_NANO_WORK_GENERATION,
   ERROR_CONFIG_TEXT_RPC_URL_NOT_SET,
   ERROR_CONFIG_INVALID_RPC_URL,
+  SEND_BLOCK_WORK_THRESHOLD_MAINNET,
+  SEND_BLOCK_WORK_THRESHOLD_BETANET,
+  NANO_BETANET_CAIP2,
 } from "./constants";
 
 /**
@@ -250,6 +259,20 @@ export function validateCustomWorkGenerator(workGenerator: WorkGenerator) {
  */
 export function deriveAccountFromPrivateKey(privateKey: PrivateKeyString): AccountString {
   return deriveAccountFromPrivateKey_({ privateKey });
+}
+
+/**
+ * Returns base difficulty by network
+ *
+ * @param network - Nano network to use (CAIP-2 network identifier)
+ * @returns Signer config shape
+ */
+export function difficultyByNetwork(network: Network): WorkDifficultyString {
+  if (network === NANO_BETANET_CAIP2) {
+    return SEND_BLOCK_WORK_THRESHOLD_BETANET;
+  }
+
+  return SEND_BLOCK_WORK_THRESHOLD_MAINNET;
 }
 
 /**

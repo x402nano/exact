@@ -23,13 +23,10 @@ import {
   ERROR_UNSUPPORTED_SCHEME,
   ERROR_UNSUPPORTED_X402_VERSION,
   ERROR_WORK_UNAVAILABLE,
-  NANO_BETANET_CAIP2,
-  NANO_TESTNET_CAIP2,
   ONE_SECOND,
-  SEND_BLOCK_WORK_THRESHOLD_BETANET,
-  SEND_BLOCK_WORK_THRESHOLD_MAINNET,
+  difficultyByNetwork,
   ensureNanoPrefix
-} from "./chunk-OXZ5ZYF6.mjs";
+} from "./chunk-AIGAD5OB.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -391,17 +388,11 @@ var ExactNanoScheme = class {
         return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
       }
       if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
-        let workThreshold;
-        if (requirements.network === NANO_BETANET_CAIP2 || requirements.network === NANO_TESTNET_CAIP2) {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_BETANET;
-        } else {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_MAINNET;
-        }
         try {
           let isWorkValid = verifyWork({
             hash: frontier,
             work: exactNanoPayload.block.work,
-            threshold: workThreshold
+            threshold: difficultyByNetwork(requirements.network)
           });
           if (!isWorkValid) {
             throw new Error();
@@ -427,4 +418,4 @@ var ExactNanoScheme = class {
 export {
   ExactNanoScheme
 };
-//# sourceMappingURL=chunk-NW7AMFKF.mjs.map
+//# sourceMappingURL=chunk-QDZU4PEU.mjs.map

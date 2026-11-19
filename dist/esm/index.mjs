@@ -3,10 +3,10 @@ import {
 } from "./chunk-I4PM46R4.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme2
-} from "./chunk-MQTR5UL3.mjs";
+} from "./chunk-NUO6S6HD.mjs";
 import {
   ExactNanoScheme as ExactNanoScheme3
-} from "./chunk-NW7AMFKF.mjs";
+} from "./chunk-QDZU4PEU.mjs";
 import {
   CLIENT_NO_WORK,
   CLIENT_SIGNER_CONFIG,
@@ -53,6 +53,7 @@ import {
   SEND_BLOCK_WORK_THRESHOLD_MAINNET,
   SUPPORTED_NANO_NETWORKS,
   deriveAccountFromPrivateKey,
+  difficultyByNetwork,
   ensureNanoPrefix,
   fromHelperConfig,
   priceNanoUnits,
@@ -61,7 +62,7 @@ import {
   validateNanoAccountPrivateKey,
   validateNanoRpcUrl,
   validateNanoWorkGenerationUrl
-} from "./chunk-OXZ5ZYF6.mjs";
+} from "./chunk-AIGAD5OB.mjs";
 import {
   __publicField
 } from "./chunk-NSSMTXJJ.mjs";
@@ -134,8 +135,7 @@ async function workGenerateInternal({
         action: "work_generate",
         params: {
           hash: block.previous,
-          block,
-          json_block: true
+          difficulty: difficultyByNetwork(network)
         },
         timeout: 5 * ONE_MINUTE,
         isGeneratingWork: true
@@ -143,7 +143,7 @@ async function workGenerateInternal({
       let isWorkValid = verifyWork({
         hash: block.previous,
         work: workGenerateResponse.work,
-        threshold: workGenerateResponse.difficulty
+        threshold: difficultyByNetwork(network)
       });
       if (isWorkValid) {
         return workGenerateResponse.work;

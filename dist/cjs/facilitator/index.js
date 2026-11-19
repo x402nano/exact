@@ -41,7 +41,6 @@ var import_bignumber2 = __toESM(require("bignumber.js"));
 
 // src/typescript/constants.ts
 var NANO_BETANET_CAIP2 = "nano:betanet";
-var NANO_TESTNET_CAIP2 = "nano:testnet";
 var SEND_BLOCK_WORK_THRESHOLD_MAINNET = "fffffff800000000";
 var SEND_BLOCK_WORK_THRESHOLD_BETANET = "fffff00000000000";
 var ERROR_NANO_RPC = "error_nano_rpc";
@@ -194,6 +193,12 @@ function isRawUnits(amount) {
 }
 function convertNanoToRaw(amount) {
   return (0, import_math.nanoToRaw)({ nano: amount });
+}
+function difficultyByNetwork(network) {
+  if (network === NANO_BETANET_CAIP2) {
+    return SEND_BLOCK_WORK_THRESHOLD_BETANET;
+  }
+  return SEND_BLOCK_WORK_THRESHOLD_MAINNET;
 }
 
 // src/typescript/facilitator/scheme.ts
@@ -546,17 +551,11 @@ var ExactNanoScheme = class {
         return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
       }
       if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
-        let workThreshold;
-        if (requirements.network === NANO_BETANET_CAIP2 || requirements.network === NANO_TESTNET_CAIP2) {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_BETANET;
-        } else {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_MAINNET;
-        }
         try {
           let isWorkValid = (0, import_crypto2.verifyWork)({
             hash: frontier,
             work: exactNanoPayload.block.work,
-            threshold: workThreshold
+            threshold: difficultyByNetwork(requirements.network)
           });
           if (!isWorkValid) {
             throw new Error();
