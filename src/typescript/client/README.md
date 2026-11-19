@@ -88,7 +88,9 @@ const client = new x402Client();
 client.register("nano:mainnet", exactNanoClientScheme);
 ```
 
-Configure **`Client`** to only create Nano payments on your chosen Nano network e.g. `nano:mainnet`.
+### 4. Set Spend Controls (Required Step)
+
+**`Client`** must be configured to only create Nano payments on your chosen Nano network e.g. `nano:mainnet`.
 ```js
 client.setSpendControls({
   allowedAssets: [{ network: "nano:mainnet", asset: "XNO" }],
