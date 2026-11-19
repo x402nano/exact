@@ -1,6 +1,18 @@
 # Changelog
 
-## v1.0.0
+## v1.1.0 (2026-11-19)
+
+### 🗨️ **Changes**
+
+- `work_generate` RPC calls no longer transmit the send block ([#8](https://github.com/x402nano/exact/issues/8), thanks [@pursekeeper](https://github.com/pursekeeper)   ).
+- Difficulty thresholds are now hard-coded based on documented values in the official Nano node documentation.
+- Clearer documentation for spend controls in [Client](https://github.com/x402nano/exact/blob/main/src/typescript/client/#set-spend-controls-required-step).
+
+### 🐛 **Bugs**
+
+- Fixed incorrect difficulty threshold for `nano:testnet`.
+
+## v1.0.0 (2026-11-18)
 
 `@x402nano/exact` **v1.0.0** introduces a wide codebase change to match the much improved [exact scheme](https://github.com/x402nano/schemes/blob/main/exact.md) for Nano payments.
 
