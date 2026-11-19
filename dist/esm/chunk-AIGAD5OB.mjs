@@ -50,7 +50,11 @@ var ONE_SECOND = 1e3;
 import BigNumber from "bignumber.js";
 import { nanoToRaw } from "nano-sdk/math";
 import { deriveAccountFromPrivateKey as deriveAccountFromPrivateKey_ } from "nano-sdk/crypto";
-import { RawAmountString as RawAmountString2, NanoAmountString, PrivateKeyString as PrivateKeyString2 } from "nano-sdk/types";
+import {
+  RawAmountString as RawAmountString2,
+  NanoAmountString,
+  PrivateKeyString as PrivateKeyString2
+} from "nano-sdk/types";
 
 // src/typescript/schemas.ts
 import * as z from "zod";
@@ -266,6 +270,12 @@ function validateCustomWorkGenerator(workGenerator) {
 function deriveAccountFromPrivateKey(privateKey) {
   return deriveAccountFromPrivateKey_({ privateKey });
 }
+function difficultyByNetwork(network) {
+  if (network === NANO_BETANET_CAIP2) {
+    return SEND_BLOCK_WORK_THRESHOLD_BETANET;
+  }
+  return SEND_BLOCK_WORK_THRESHOLD_MAINNET;
+}
 function fromHelperConfig(helperConfig) {
   let config = {};
   if (helperConfig.NANO_ACCOUNT_PRIVATE_KEY) {
@@ -333,10 +343,11 @@ export {
   validateNanoAccountPrivateKey,
   validateCustomWorkGenerator,
   deriveAccountFromPrivateKey,
+  difficultyByNetwork,
   fromHelperConfig,
   CLIENT_SIGNER_CONFIG,
   RESOURCE_SERVER_SIGNER_CONFIG,
   FACILITATOR_SIGNER_CONFIG,
   ASSET_AMOUNT
 };
-//# sourceMappingURL=chunk-OXZ5ZYF6.mjs.map
+//# sourceMappingURL=chunk-AIGAD5OB.mjs.map

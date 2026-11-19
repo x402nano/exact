@@ -308,6 +308,12 @@ function validateCustomWorkGenerator(workGenerator) {
 function deriveAccountFromPrivateKey(privateKey) {
   return (0, import_crypto.deriveAccountFromPrivateKey)({ privateKey });
 }
+function difficultyByNetwork(network) {
+  if (network === NANO_BETANET_CAIP2) {
+    return SEND_BLOCK_WORK_THRESHOLD_BETANET;
+  }
+  return SEND_BLOCK_WORK_THRESHOLD_MAINNET;
+}
 function fromHelperConfig(helperConfig) {
   let config = {};
   if (helperConfig.NANO_ACCOUNT_PRIVATE_KEY) {
@@ -856,17 +862,11 @@ var ExactNanoScheme3 = class {
         return constructVerifyInvalidResponse_(ERROR_BLOCK_AMOUNT_MISMATCH);
       }
       if (!shouldGenerateWork({ signer: this.signer, clientWork: exactNanoPayload.block.work })) {
-        let workThreshold;
-        if (requirements.network === NANO_BETANET_CAIP2 || requirements.network === NANO_TESTNET_CAIP2) {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_BETANET;
-        } else {
-          workThreshold = SEND_BLOCK_WORK_THRESHOLD_MAINNET;
-        }
         try {
           let isWorkValid = (0, import_crypto2.verifyWork)({
             hash: frontier,
             work: exactNanoPayload.block.work,
-            threshold: workThreshold
+            threshold: difficultyByNetwork(requirements.network)
           });
           if (!isWorkValid) {
             throw new Error();
@@ -957,8 +957,7 @@ async function workGenerateInternal({
         action: "work_generate",
         params: {
           hash: block.previous,
-          block,
-          json_block: true
+          difficulty: difficultyByNetwork(network)
         },
         timeout: 5 * ONE_MINUTE,
         isGeneratingWork: true
@@ -966,7 +965,7 @@ async function workGenerateInternal({
       let isWorkValid = (0, import_crypto3.verifyWork)({
         hash: block.previous,
         work: workGenerateResponse.work,
-        threshold: workGenerateResponse.difficulty
+        threshold: difficultyByNetwork(network)
       });
       if (isWorkValid) {
         return workGenerateResponse.work;
