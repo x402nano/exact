@@ -5,6 +5,7 @@ import {
   MOCK_SIGNER,
   MOCK_PAYMENT_REQUIRED_RESPONSE_CLIENT,
   MOCK_PAYMENT_PAYLOAD,
+  MOCK_PAYMENT_REQUIREMENT_A,
   NETWORK,
   SUPPORTED_X402_VERSION,
   UNSUPPORTED_X402_VERSION,
@@ -90,6 +91,24 @@ describe("@x402nano/exact - Client", () => {
     });
 
     const result = await wildcardClient.createPaymentPayload(MOCK_PAYMENT_REQUIRED_RESPONSE_CLIENT);
+
+    expect(result).toHaveProperty("payload.block");
+  });
+
+  // -----
+
+  it("should create a PaymentPayload when the requirements carry no extra", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { extra, ...requirementWithoutExtra } = MOCK_PAYMENT_REQUIREMENT_A;
+
+    await expect(
+      scheme.createPaymentPayload(SUPPORTED_X402_VERSION, requirementWithoutExtra as never),
+    ).resolves.toHaveProperty("payload.block");
+
+    const result = await client.createPaymentPayload({
+      ...MOCK_PAYMENT_REQUIRED_RESPONSE_CLIENT,
+      accepts: [requirementWithoutExtra as never],
+    });
 
     expect(result).toHaveProperty("payload.block");
   });

@@ -52,7 +52,7 @@ export class ExactNanoScheme implements SchemeNetworkClient {
     }
 
     if (
-      paymentRequirements?.extra.workOptional === true &&
+      paymentRequirements.extra?.workOptional === true &&
       !this.signer.getConfig().workGenerator &&
       !this.signer.getConfig().workGenerationUrl
     ) {
